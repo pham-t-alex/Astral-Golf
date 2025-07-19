@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: LoadedPrefabs
   m_EditorClassIdentifier: 
   shootLine: {fileID: 1724236029379870659, guid: a9f4eee7bc40caa4f983acd32f904c7e, type: 3}
+  star: {fileID: 2806718780446702024, guid: db24da2176ca5be4b90f216580e7270d, type: 3}

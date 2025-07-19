@@ -11,6 +11,12 @@ public class PlayerBall : MonoBehaviour
     [Tooltip("Scaling for the launch line visualizer.")]
     [SerializeField] private float launchLineScale = 1f;
 
+    [Header("Internal Stats")]
+    [Tooltip("Threshold for stopping movement")]
+    [SerializeField] private float moveVelocityThreshold = 0.2f;
+    [Tooltip("Threshold for mouse movement to trigger launch")]
+    [SerializeField] private float launchThreshold = 5f;
+
     // Components
     private PlayerInput playerInput;
     private Rigidbody2D rb;
@@ -22,6 +28,9 @@ public class PlayerBall : MonoBehaviour
 
     // Whether the player is eligible for movement
     private bool canMove = true;
+    // Whether the player is moving from a launch
+    private bool isMovingFromLaunch = false;
+    public bool IsMovingFromLaunch => isMovingFromLaunch;
     // Whether the ball is selected
     private bool ballSelected = false;
     // The launch line
@@ -44,13 +53,14 @@ public class PlayerBall : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (rb.linearVelocity.magnitude < 0.1f && !canMove) // stop the ball movement if it is almost still
+        if (rb.linearVelocity.magnitude < moveVelocityThreshold) // stop the ball movement if it is almost still
         {
             if (rb.linearVelocity.magnitude > 0)
             {
                 rb.linearVelocity = Vector2.zero;
             }
             canMove = true; // reset when ball is still
+            isMovingFromLaunch = false;
         }
         if (ballSelected && launchLine != null)
         {
@@ -79,12 +89,13 @@ public class PlayerBall : MonoBehaviour
             Vector2 newMousePos = mousePosition.ReadValue<Vector2>();
             Debug.Log("Release detected at: " + newMousePos);
             Vector2 direction = startingMousePos - newMousePos;
-            if (direction.magnitude > 0.1f) // don't move if mouse barely moved
+            if (direction.magnitude > launchThreshold) // don't move if mouse barely moved
             {
                 rb.AddForce(direction * launchForce, ForceMode2D.Impulse);
             }
             startingMousePos = Vector2.zero; // reset starting position
             canMove = false;
+            isMovingFromLaunch = true;
             ballSelected = false; // unselects ball
             if (launchLine != null)
             {
