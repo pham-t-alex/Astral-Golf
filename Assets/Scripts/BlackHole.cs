@@ -1,13 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BlackHole : OrbitingObject
 {
+    [SerializeField] private GameObject outerTrigger;
     private float pullForceFactor;
-    private float maxPullRadius;
-    public void InitializeBlackHole(float pullForceFactor, float maxPullRadius)
+    private HashSet<PlayerBall> players = new HashSet<PlayerBall>();
+    public void InitializeBlackHole(float pullForceFactor, float pullScale)
     {
         this.pullForceFactor = pullForceFactor;
-        this.maxPullRadius = maxPullRadius;
+        outerTrigger.transform.localScale = new Vector3(pullScale / transform.localScale.x, pullScale / transform.localScale.y, 1f);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -18,13 +20,28 @@ public class BlackHole : OrbitingObject
 
     private void FixedUpdate()
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, maxPullRadius, LayerMask.GetMask("Player"));
-        foreach (Collider2D collider in colliders)
+        foreach (PlayerBall player in players)
         {
-            Vector2 direction = (transform.position - collider.transform.position).normalized;
-            float distance = Vector2.Distance(transform.position, collider.transform.position);
+            Vector2 direction = (transform.position - player.transform.position).normalized;
+            float distance = Vector2.Distance(transform.position, player.transform.position);
             float pullForce = pullForceFactor / (distance * distance);
-            collider.GetComponent<Rigidbody2D>().AddForce(direction * pullForce, ForceMode2D.Force);
+            player.GetComponent<Rigidbody2D>().AddForce(direction * pullForce, ForceMode2D.Force);
         }
+    }
+
+    protected override void StartSetup()
+    {
+        base.StartSetup();
+        OuterRadius outerRadius = outerTrigger.GetComponent<OuterRadius>();
+        outerRadius.OnOuterRadiusEnter += (collider) =>
+        {
+            if (collider.gameObject.layer != LayerMask.NameToLayer("Player")) return;
+            players.Add(collider.GetComponent<PlayerBall>());
+        };
+        outerRadius.OnOuterRadiusExit += (collider) =>
+        {
+            if (collider.gameObject.layer != LayerMask.NameToLayer("Player")) return;
+            players.Remove(collider.GetComponent<PlayerBall>());
+        };
     }
 }

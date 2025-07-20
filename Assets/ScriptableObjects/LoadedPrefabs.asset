@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shootLine: {fileID: 1724236029379870659, guid: a9f4eee7bc40caa4f983acd32f904c7e, type: 3}
   star: {fileID: 2806718780446702024, guid: db24da2176ca5be4b90f216580e7270d, type: 3}
+  redGiantStar: {fileID: 2806718780446702024, guid: a75eda4834be82a409a4f1e504ccb5be, type: 3}
   nebula: {fileID: 2806718780446702024, guid: e3903fc1929fc2a4a9209f2e5fc248d3, type: 3}
   neutronStar: {fileID: 2806718780446702024, guid: 78e69442858a4d84392c96e5d1662fcb, type: 3}
   blackHole: {fileID: 2806718780446702024, guid: 1f7dbde9bbca75244beace19a4e74224, type: 3}
-  wormhole: {fileID: 0}
+  supernovaEffect: {fileID: 3079750256022094729, guid: c81cc3be4f280694da1a1396b2663a93, type: 3}
+  redGiantProjection: {fileID: 2856746963193980942, guid: 9a208e95db1899b46a6d898cdf2e2280, type: 3}
+  nebulaProjection: {fileID: 4896453336974669272, guid: dcde4e7c78b7a3f46b6d209918b03d2e, type: 3}
+  neutronStarProjection: {fileID: 3913231202545146484, guid: 525556876d3359e44891577e982d6bdd, type: 3}
+  blackHoleProjection: {fileID: 3146572066293527565, guid: 0904ba6c96d5f424298a93019ff10d0e, type: 3}

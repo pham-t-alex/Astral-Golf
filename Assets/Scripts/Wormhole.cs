@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class Wormhole : CelestialObject
 {
-    [Header("Celestial Object Settings")]
-    [SerializeField] private float scale = 1f;
     [Header("Wormhole Settings")]
     [SerializeField] private Wormhole destinationWormhole;
 

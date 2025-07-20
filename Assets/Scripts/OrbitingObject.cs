@@ -2,12 +2,12 @@ using UnityEngine;
 
 public abstract class OrbitingObject : CelestialObject
 {
-    private Vector2 orbitCenter;
-    private float semiMajorAxisLength;
-    private float semiMinorAxisLength;
-    private float ellipticalRotation;
-    private float startingAngle;
-    private float angularVelocity;
+    protected Vector2 orbitCenter;
+    protected float semiMajorAxisLength;
+    protected float semiMinorAxisLength;
+    protected float ellipticalRotation;
+    protected float startingAngle;
+    protected float angularVelocity;
     private Rigidbody2D rb;
 
     public void InitializeOrbit(Vector2 orbitCenter, float semiMajor, float semiMinor, float rotation, float angle, float angularVelocity)
@@ -30,6 +30,7 @@ public abstract class OrbitingObject : CelestialObject
     private void UpdateOrbit(float orbitTime)
     {
         float angle = startingAngle + (orbitTime * angularVelocity);
+        if (rb == null) return;
         rb.MovePosition(EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, Mathf.Deg2Rad * angle));
     }
 
