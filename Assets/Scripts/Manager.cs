@@ -16,6 +16,9 @@ public class Manager : MonoBehaviour
     [Tooltip("Time in seconds between projection appearing and event")]
     [SerializeField] private float projectionTime = 45f;
     public float ProjectionTime => projectionTime;
+    [Tooltip("Max time after max star age + max red giant age")]
+    [SerializeField] private float maxTimeAfterAllStarsDied = 0f;
+    public float MaxTimeAfterAllStarsDied => maxTimeAfterAllStarsDied;
 
     [Header("Time Distortion Settings")]
     [SerializeField] private float timeForwardFactor = 2f;
@@ -47,6 +50,8 @@ public class Manager : MonoBehaviour
     // should trigger on game time updates and orbit time displacement changes
     public event Action<float> OrbitTimeUpdate;
 
+    private float maxNaturalTime = 0f;
+
     public enum TimeDistortionType
     {
         Time,
@@ -75,6 +80,11 @@ public class Manager : MonoBehaviour
         GameTimeUpdate += (time) => OrbitTimeUpdate?.Invoke(time + orbitTimeDisplacement);
     }
 
+    private void Start()
+    {
+        maxNaturalTime = starMaxAge + redGiantMaxAge + maxTimeAfterAllStarsDied;
+    }
+
     private void Update()
     {
         if (distortionActive)
@@ -85,6 +95,7 @@ public class Manager : MonoBehaviour
                     if (timeDistortion.forward)
                     {
                         gameTime += timeDistortion.accelerated ? timeForwardAcceleratedFactor * Time.deltaTime : timeForwardFactor * Time.deltaTime;
+                        gameTime = Mathf.Min(gameTime, maxNaturalTime);
                     }
                     else
                     {
@@ -96,11 +107,11 @@ public class Manager : MonoBehaviour
                 case TimeDistortionType.Orbit:
                     if (timeDistortion.forward)
                     {
-                        orbitTimeDisplacement += timeDistortion.accelerated ? timeForwardAcceleratedFactor * Time.deltaTime : timeForwardFactor * Time.deltaTime;
+                        orbitTimeDisplacement += timeDistortion.accelerated ? orbitForwardAcceleratedFactor * Time.deltaTime : orbitForwardFactor * Time.deltaTime;
                     }
                     else
                     {
-                        orbitTimeDisplacement -= timeDistortion.accelerated ? timeBackwardAcceleratedFactor * Time.deltaTime : timeBackwardFactor * Time.deltaTime;
+                        orbitTimeDisplacement -= timeDistortion.accelerated ? orbitBackwardAcceleratedFactor * Time.deltaTime : orbitBackwardFactor * Time.deltaTime;
                     }
                     OrbitTimeUpdate?.Invoke(gameTime + orbitTimeDisplacement);
                 break;
@@ -109,6 +120,7 @@ public class Manager : MonoBehaviour
         else
         {
             gameTime += Time.deltaTime;
+            maxNaturalTime = Mathf.Max(maxNaturalTime, gameTime);
             GameTimeUpdate?.Invoke(gameTime);
         }
     }

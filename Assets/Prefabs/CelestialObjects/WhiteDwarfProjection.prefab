@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1902151697330011194}
   - component: {fileID: 6520613776038930764}
   m_Layer: 0
-  m_Name: NebulaProjection
+  m_Name: WhiteDwarfProjection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

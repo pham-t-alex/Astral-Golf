@@ -43,11 +43,13 @@ public class Star : OrbitingObject
     {
         if (destroyed) return;
         age = baseAge + time;
+        float newAge;
+        float newBaseAge;
         if (type == StarType.MainSequence && age > Manager.Instance.StarMaxAge)
         {
             destroyed = true;
-            float newAge = age - Manager.Instance.StarMaxAge;
-            float newBaseAge = newAge - time;
+            newAge = age - Manager.Instance.StarMaxAge;
+            newBaseAge = newAge - time;
             GameObject newStar = Instantiate(Manager.Instance.LoadedPrefabs.RedGiantStar, transform.position, Quaternion.identity);
             Star starComp = newStar.GetComponent<Star>();
             starComp.InitializeCelestialObject(scale);
@@ -61,8 +63,8 @@ public class Star : OrbitingObject
         if (age < 0)
         {
             destroyed = true;
-            float newAge = age + Manager.Instance.StarMaxAge;
-            float newBaseAge = newAge - time;
+            newAge = age + Manager.Instance.StarMaxAge;
+            newBaseAge = newAge - time;
             GameObject newStar = Instantiate(Manager.Instance.LoadedPrefabs.Star, transform.position, Quaternion.identity);
             Star starComp = newStar.GetComponent<Star>();
             starComp.InitializeCelestialObject(scale);
@@ -74,13 +76,16 @@ public class Star : OrbitingObject
         if (age <= Manager.Instance.RedGiantMaxAge) return;
         // red giant dies
         destroyed = true;
+        newAge = age - Manager.Instance.RedGiantMaxAge;
+        newBaseAge = newAge - time;
         if (fate == StarFate.Nebula)
         {
-            GameObject nebula = Instantiate(Manager.Instance.LoadedPrefabs.Nebula, transform.position, Quaternion.identity);
-            Nebula nebulaComp = nebula.GetComponent<Nebula>();
-            nebulaComp.InitializeCelestialObject(scale);
-            nebulaComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-            nebulaComp.InitializeNebula(Random.Range(-20, 20));
+            GameObject whiteDwarf = Instantiate(Manager.Instance.LoadedPrefabs.WhiteDwarf, transform.position, Quaternion.identity);
+            WhiteDwarf whiteDwarfComp = whiteDwarf.GetComponent<WhiteDwarf>();
+            whiteDwarfComp.InitializeCelestialObject(scale);
+            whiteDwarfComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
+            whiteDwarfComp.InitializeWhiteDwarf(newBaseAge, newAge, scale * Random.Range(4, 6), Random.Range(-20, 20));
+            
             Destroy(gameObject);
             return;
         }
@@ -103,7 +108,7 @@ public class Star : OrbitingObject
             NeutronStar neutronStarComp = neutronStar.GetComponent<NeutronStar>();
             neutronStarComp.InitializeCelestialObject(scale);
             neutronStarComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-            neutronStarComp.InitializeNeutronStar(scale * 20, scale * 5f);
+            neutronStarComp.InitializeNeutronStar(newBaseAge, newAge, scale * Random.Range(15, 25), scale * Random.Range(4, 6));
         }
         else
         {
@@ -111,7 +116,7 @@ public class Star : OrbitingObject
             BlackHole blackHoleComp = blackHole.GetComponent<BlackHole>();
             blackHoleComp.InitializeCelestialObject(scale);
             blackHoleComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-            blackHoleComp.InitializeBlackHole(scale * 20, scale * 5f);
+            blackHoleComp.InitializeBlackHole(newBaseAge, newAge, scale * Random.Range(15, 25), scale * Random.Range(4, 6));
         }
         Destroy(gameObject);
     }
@@ -150,7 +155,7 @@ public class Star : OrbitingObject
                 switch (fate)
                 {
                     case StarFate.Nebula:
-                        deathProjection = Instantiate(Manager.Instance.LoadedPrefabs.NebulaProjection, deathPosition, Quaternion.identity);
+                        deathProjection = Instantiate(Manager.Instance.LoadedPrefabs.WhiteDwarfProjection, deathPosition, Quaternion.identity);
                         break;
                     case StarFate.NeutronStar:
                         deathProjection = Instantiate(Manager.Instance.LoadedPrefabs.NeutronStarProjection, deathPosition, Quaternion.identity);
@@ -169,8 +174,9 @@ public class Star : OrbitingObject
         }
     }
 
-    void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         if (redGiantProjection != null)
         {
             Destroy(redGiantProjection);

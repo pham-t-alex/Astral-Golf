@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Nebula : OrbitingObject
+public class Nebula : MonoBehaviour
 {
     private float accelFactor;
     private HashSet<PlayerBall> playersInNebula = new HashSet<PlayerBall>();

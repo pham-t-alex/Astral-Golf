@@ -30,4 +30,5 @@ public abstract class CelestialObject : MonoBehaviour
     protected virtual void Tick(float deltaTime) { }
     protected virtual void StartSetup() { }
     protected virtual void FixedTick(float fixedDeltaTime) { }
+    protected virtual void OnDestroy() { }
 }

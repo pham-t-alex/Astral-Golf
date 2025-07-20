@@ -18,6 +18,6 @@ public class NeutronStarSpawn : OrbitingObjectSpawn
         NeutronStar neutronStarComp = neutronStar.GetComponent<NeutronStar>();
         neutronStarComp.InitializeCelestialObject(scale);
         neutronStarComp.InitializeOrbit(transform.position, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-        neutronStarComp.InitializeNeutronStar(pullForceFactor, pullScale);
+        neutronStarComp.InitializeNeutronStar(0, 0, pullForceFactor, pullScale);
     }
 }

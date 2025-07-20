@@ -15,9 +15,9 @@ public class LoadedPrefabs : ScriptableObject
     [SerializeField] private GameObject redGiantStar;
     public GameObject RedGiantStar => redGiantStar;
 
-    [Tooltip("Nebula prefab")]
-    [SerializeField] private GameObject nebula;
-    public GameObject Nebula => nebula;
+    [Tooltip("White dwarf prefab")]
+    [SerializeField] private GameObject whiteDwarf;
+    public GameObject WhiteDwarf => whiteDwarf;
 
     [Tooltip("Neutron Star prefab")]
     [SerializeField] private GameObject neutronStar;
@@ -35,9 +35,9 @@ public class LoadedPrefabs : ScriptableObject
     [SerializeField] private GameObject redGiantProjection;
     public GameObject RedGiantProjection => redGiantProjection;
 
-    [Tooltip("Nebula projection")]
-    [SerializeField] private GameObject nebulaProjection;
-    public GameObject NebulaProjection => nebulaProjection;
+    [Tooltip("White dwarf projection")]
+    [SerializeField] private GameObject whiteDwarfProjection;
+    public GameObject WhiteDwarfProjection => whiteDwarfProjection;
 
     [Tooltip("Neutron Star projection")]
     [SerializeField] private GameObject neutronStarProjection;
@@ -46,4 +46,8 @@ public class LoadedPrefabs : ScriptableObject
     [Tooltip("Black Hole projection")]
     [SerializeField] private GameObject blackHoleProjection;
     public GameObject BlackHoleProjection => blackHoleProjection;
+
+    [Tooltip("Star orbit line prefab")]
+    [SerializeField] private GameObject starOrbitLine;
+    public GameObject StarOrbitLine => starOrbitLine;
 }

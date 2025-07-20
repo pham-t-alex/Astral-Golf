@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class OrbitingObject : CelestialObject
@@ -9,6 +10,7 @@ public abstract class OrbitingObject : CelestialObject
     protected float startingAngle;
     protected float angularVelocity;
     private Rigidbody2D rb;
+    private List<GameObject> orbitLines = new List<GameObject>();
 
     public void InitializeOrbit(Vector2 orbitCenter, float semiMajor, float semiMinor, float rotation, float angle, float angularVelocity)
     {
@@ -18,6 +20,18 @@ public abstract class OrbitingObject : CelestialObject
         ellipticalRotation = rotation;
         startingAngle = angle;
         this.angularVelocity = angularVelocity;
+
+        Vector2 prevPoint = EllipsePosition(orbitCenter, semiMajor, semiMinor, rotation, 0);
+        int segments = VisualManager.Instance.OrbitSegments;
+        for (int i = 1; i <= segments; i++)
+        {
+            float newAngle = ((float)i / segments) * 2 * Mathf.PI;
+            Vector2 point = EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, newAngle);
+            GameObject g = Instantiate(Manager.Instance.LoadedPrefabs.StarOrbitLine, prevPoint, Quaternion.identity);
+            g.GetComponent<LineRenderer>().SetPosition(1, point - prevPoint);
+            orbitLines.Add(g);
+            prevPoint = point;
+        }
     }
 
     protected override void StartSetup()
@@ -53,5 +67,14 @@ public abstract class OrbitingObject : CelestialObject
         Vector2 direction = new Vector2(-semiMajor * Mathf.Sin(radAngle), semiMinor * Mathf.Cos(radAngle));
         Vector2 rotatedDirection = Quaternion.Euler(0, 0, rotation) * direction;
         return angularVelocity * rotatedDirection;
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        foreach (GameObject line in orbitLines)
+        {
+            Destroy(line);
+        }
     }
 }

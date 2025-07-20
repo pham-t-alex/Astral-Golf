@@ -18,6 +18,7 @@ public abstract class CelestialObjectSpawn : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (Application.isPlaying) return;
         DrawObject(transform.position);
     }
 
