@@ -14,6 +14,7 @@ public class PlayerBall : MonoBehaviour
     [Header("Internal Stats")]
     [Tooltip("Threshold for stopping movement")]
     [SerializeField] private float moveVelocityThreshold = 0.2f;
+    public float MoveVelocityThreshold => moveVelocityThreshold;
     [Tooltip("Threshold for mouse movement to trigger launch")]
     [SerializeField] private float launchThreshold = 5f;
 
@@ -35,6 +36,9 @@ public class PlayerBall : MonoBehaviour
     private bool ballSelected = false;
     // The launch line
     private LineRenderer launchLine;
+    // The wormhole the player is exiting through (ensures that the player won't teleport back through)
+    private Wormhole exitWormhole;
+    public Wormhole ExitWormhole => exitWormhole;
 
     private void Awake()
     {
@@ -81,13 +85,11 @@ public class PlayerBall : MonoBehaviour
             if (hit.collider == null) return;
 
             ballSelected = true; // ball is selected
-            Debug.Log("Press detected at: " + startingMousePos);
             launchLine = Instantiate(Manager.Instance.LoadedPrefabs.ShootLine, transform).GetComponent<LineRenderer>();
         }
         else if (ctx.canceled && ballSelected)
         {
             Vector2 newMousePos = mousePosition.ReadValue<Vector2>();
-            Debug.Log("Release detected at: " + newMousePos);
             Vector2 direction = startingMousePos - newMousePos;
             if (direction.magnitude > launchThreshold) // don't move if mouse barely moved
             {
@@ -103,5 +105,10 @@ public class PlayerBall : MonoBehaviour
                 launchLine = null;
             }
         }
+    }
+
+    public void SetExitWormhole(Wormhole w)
+    {
+        exitWormhole = w;
     }
 }

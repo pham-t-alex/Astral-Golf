@@ -14,3 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shootLine: {fileID: 1724236029379870659, guid: a9f4eee7bc40caa4f983acd32f904c7e, type: 3}
   star: {fileID: 2806718780446702024, guid: db24da2176ca5be4b90f216580e7270d, type: 3}
+  nebula: {fileID: 2806718780446702024, guid: e3903fc1929fc2a4a9209f2e5fc248d3, type: 3}
+  neutronStar: {fileID: 2806718780446702024, guid: 78e69442858a4d84392c96e5d1662fcb, type: 3}
+  blackHole: {fileID: 2806718780446702024, guid: 1f7dbde9bbca75244beace19a4e74224, type: 3}
+  wormhole: {fileID: 0}

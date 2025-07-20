@@ -9,6 +9,6 @@ public class StarSpawn : OrbitingObjectSpawn
         GameObject star = Instantiate(Manager.Instance.LoadedPrefabs.Star, ObjPosition, Quaternion.identity);
         Star starComp = star.GetComponent<Star>();
         starComp.InitializeCelestialObject(scale);
-        starComp.InitializeOrbit(transform.position, radius, startingAngle, angularVelocity);
+        starComp.InitializeOrbit(transform.position, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
     }
 }
