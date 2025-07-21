@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class BlackHoleSpawn : OrbitingObjectSpawn
@@ -14,10 +15,12 @@ public class BlackHoleSpawn : OrbitingObjectSpawn
 
     public override void SpawnObject()
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         GameObject blackHole = Instantiate(Manager.Instance.LoadedPrefabs.BlackHole, ObjPosition, Quaternion.identity);
         BlackHole blackHoleComp = blackHole.GetComponent<BlackHole>();
         blackHoleComp.InitializeCelestialObject(scale);
         blackHoleComp.InitializeOrbit(transform.position, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
         blackHoleComp.InitializeBlackHole(0, 0, pullForceFactor, pullScale);
+        blackHole.GetComponent<NetworkObject>().Spawn();
     }
 }

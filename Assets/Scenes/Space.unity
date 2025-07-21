@@ -3115,7 +3115,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4878064946689564730, guid: 09b9d8b4c3a7ebb4a8f6f78ca24c90c4, type: 3}
       propertyPath: fate
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4878064946689564730, guid: 09b9d8b4c3a7ebb4a8f6f78ca24c90c4, type: 3}
       propertyPath: scale

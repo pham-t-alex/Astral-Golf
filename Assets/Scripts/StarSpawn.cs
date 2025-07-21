@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class StarSpawn : OrbitingObjectSpawn
@@ -9,6 +10,7 @@ public class StarSpawn : OrbitingObjectSpawn
 
     public override void SpawnObject()
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         GameObject star;
         if (type == Star.StarType.MainSequence)
         {
@@ -22,5 +24,6 @@ public class StarSpawn : OrbitingObjectSpawn
         starComp.InitializeCelestialObject(scale);
         starComp.InitializeOrbit(transform.position, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
         starComp.InitializeStar(baseAge, baseAge, type, fate);
+        star.GetComponent<NetworkObject>().Spawn();
     }
 }

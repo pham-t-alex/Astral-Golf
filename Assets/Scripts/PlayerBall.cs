@@ -96,6 +96,15 @@ public class PlayerBall : NetworkBehaviour
         }
     }
 
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        if (completedTurn)
+        {
+            Manager.Instance.NextPlayerTurn();
+        }
+    }
+
     public void HandleLMouse(InputAction.CallbackContext ctx)
     {
         if (!(IsClient && IsOwner && ClientManager.Instance.CurrentTurn)) return;

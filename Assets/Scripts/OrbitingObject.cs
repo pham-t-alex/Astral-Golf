@@ -21,24 +21,19 @@ public abstract class OrbitingObject : CelestialObject
         startingAngle = angle;
         this.angularVelocity = angularVelocity;
 
-        Vector2 prevPoint = EllipsePosition(orbitCenter, semiMajor, semiMinor, rotation, 0);
-        int segments = ClientManager.Instance.OrbitSegments;
-        for (int i = 1; i <= segments; i++)
-        {
-            float newAngle = ((float)i / segments) * 2 * Mathf.PI;
-            Vector2 point = EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, newAngle);
-            GameObject g = Instantiate(ClientManager.Instance.LoadedPrefabs.StarOrbitLine, prevPoint, Quaternion.identity);
-            g.GetComponent<LineRenderer>().SetPosition(1, point - prevPoint);
-            orbitLines.Add(g);
-            prevPoint = point;
-        }
-    }
-
-    protected override void StartSetup()
-    {
-        base.StartSetup();
-        Manager.Instance.OrbitTimeUpdate += UpdateOrbit;
         rb = GetComponent<Rigidbody2D>();
+
+        //Vector2 prevPoint = EllipsePosition(orbitCenter, semiMajor, semiMinor, rotation, 0);
+        //int segments = ClientManager.Instance.OrbitSegments;
+        //for (int i = 1; i <= segments; i++)
+        //{
+        //    float newAngle = ((float)i / segments) * 2 * Mathf.PI;
+        //    Vector2 point = EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, newAngle);
+        //    GameObject g = Instantiate(ClientManager.Instance.LoadedPrefabs.StarOrbitLine, prevPoint, Quaternion.identity);
+        //    g.GetComponent<LineRenderer>().SetPosition(1, point - prevPoint);
+        //    orbitLines.Add(g);
+        //    prevPoint = point;
+        //}
     }
 
     private void UpdateOrbit(float orbitTime)
@@ -48,9 +43,15 @@ public abstract class OrbitingObject : CelestialObject
         rb.MovePosition(EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, Mathf.Deg2Rad * angle));
     }
 
-    protected override void FixedTick(float fixedDeltaTime)
+    protected override void StartClientSetup()
     {
-        base.FixedTick(fixedDeltaTime);
+        base.StartClientSetup();
+        Destroy(GetComponent<Rigidbody2D>());
+    }
+
+    protected override void ServerFixedTick(float fixedDeltaTime)
+    {
+        base.ServerFixedTick(fixedDeltaTime);
         float orbitTime = Manager.Instance.OrbitTime;
         UpdateOrbit(orbitTime);
     }
@@ -69,9 +70,10 @@ public abstract class OrbitingObject : CelestialObject
         return angularVelocity * rotatedDirection;
     }
 
-    protected override void OnDestroy()
+    public override void OnDestroy()
     {
         base.OnDestroy();
+        if (!IsClient) return;
         foreach (GameObject line in orbitLines)
         {
             Destroy(line);

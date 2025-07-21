@@ -288,7 +288,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  launchForce: 10
+  launchForce: 5
   launchLineScale: 3
   moveVelocityThreshold: 0.2
   launchThreshold: 0.2

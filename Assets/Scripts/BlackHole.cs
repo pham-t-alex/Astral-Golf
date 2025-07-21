@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using static Star;
 
@@ -9,35 +10,17 @@ public class BlackHole : OrbitingObject
     private bool destroyed = false;
     [SerializeField] private GameObject outerTrigger;
     private float pullForceFactor;
+    private float pullScale;
     private HashSet<PlayerBall> players = new HashSet<PlayerBall>();
+
     public void InitializeBlackHole(float baseAge, float age, float pullForceFactor, float pullScale)
     {
         this.baseAge = baseAge;
         this.age = age;
+        this.pullScale = pullScale;
         this.pullForceFactor = pullForceFactor;
         outerTrigger.transform.localScale = new Vector3(pullScale / transform.localScale.x, pullScale / transform.localScale.y, 1f);
-    }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.layer != LayerMask.NameToLayer("Player")) return;
-        Destroy(collision.gameObject);
-    }
-
-    private void FixedUpdate()
-    {
-        foreach (PlayerBall player in players)
-        {
-            Vector2 direction = (transform.position - player.transform.position).normalized;
-            float distance = Vector2.Distance(transform.position, player.transform.position);
-            float pullForce = pullForceFactor / (distance * distance);
-            player.GetComponent<Rigidbody2D>().AddForce(direction * pullForce, ForceMode2D.Force);
-        }
-    }
-
-    protected override void StartSetup()
-    {
-        base.StartSetup();
         Manager.Instance.GameTimeUpdate += UpdateBlackHoleAge;
         OuterRadius outerRadius = outerTrigger.GetComponent<OuterRadius>();
         outerRadius.OnOuterRadiusEnter += (collider) =>
@@ -52,8 +35,40 @@ public class BlackHole : OrbitingObject
         };
     }
 
+    protected override void StartServerSetup()
+    {
+        base.StartServerSetup();
+        InitializeOuterRadiusClientRpc(pullScale, default);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void InitializeOuterRadiusClientRpc(float pullScale, RpcParams rpcParams)
+    {
+        outerTrigger.transform.localScale = new Vector3(pullScale / transform.localScale.x, pullScale / transform.localScale.y, 1f);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!IsServer) return;
+        if (collision.gameObject.layer != LayerMask.NameToLayer("Player")) return;
+        Destroy(collision.gameObject);
+    }
+
+    protected override void ServerFixedTick(float fixedDeltaTime)
+    {
+        base.ServerFixedTick(fixedDeltaTime);
+        foreach (PlayerBall player in players)
+        {
+            Vector2 direction = (transform.position - player.transform.position).normalized;
+            float distance = Vector2.Distance(transform.position, player.transform.position);
+            float pullForce = pullForceFactor / (distance * distance);
+            player.GetComponent<Rigidbody2D>().AddForce(direction * pullForce, ForceMode2D.Force);
+        }
+    }
+
     public void UpdateBlackHoleAge(float time)
     {
+        if (!IsServer) return;
         if (destroyed) return;
         age = baseAge + time;
         if (age < 0)

@@ -15,6 +15,7 @@ public class Wormhole : CelestialObject
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!IsServer) return;
         if (collision.gameObject.layer != LayerMask.NameToLayer("Player")) return;
         PlayerBall player = collision.GetComponent<PlayerBall>();
         if (player.ExitWormhole == this) return;
@@ -24,12 +25,13 @@ public class Wormhole : CelestialObject
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if (!IsServer) return;
         if (collision.gameObject.layer != LayerMask.NameToLayer("Player")) return;
         PlayerBall player = collision.GetComponent<PlayerBall>();
         if (player.ExitWormhole == this) player.SetExitWormhole(null);
     }
 
-    protected override void StartSetup()
+    protected override void StartServerSetup()
     {
         InitializeCelestialObject(scale);
     }

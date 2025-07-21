@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using Unity.Netcode;
 
 public class OuterRadius : MonoBehaviour
 {
@@ -8,11 +9,13 @@ public class OuterRadius : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         OnOuterRadiusEnter?.Invoke(collision);
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         OnOuterRadiusExit?.Invoke(collision);
     }
 }

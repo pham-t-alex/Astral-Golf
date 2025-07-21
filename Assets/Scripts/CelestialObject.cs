@@ -1,13 +1,27 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public abstract class CelestialObject : MonoBehaviour
+public abstract class CelestialObject : NetworkBehaviour
 {
     [Header("Celestial Object Settings")]
     [SerializeField] protected float scale;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        StartSetup();
+        
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (IsServer)
+        {
+            StartServerSetup();
+        }
+        if (IsClient)
+        {
+            StartClientSetup();
+        }
     }
 
     // Update is called once per frame
@@ -18,7 +32,8 @@ public abstract class CelestialObject : MonoBehaviour
 
     private void FixedUpdate()
     {
-        FixedTick(Time.fixedDeltaTime);
+        if (!IsServer) return;
+        ServerFixedTick(Time.fixedDeltaTime);
     }
 
     public void InitializeCelestialObject(float scale)
@@ -28,7 +43,11 @@ public abstract class CelestialObject : MonoBehaviour
     }
 
     protected virtual void Tick(float deltaTime) { }
-    protected virtual void StartSetup() { }
-    protected virtual void FixedTick(float fixedDeltaTime) { }
-    protected virtual void OnDestroy() { }
+    protected virtual void StartServerSetup() { }
+    protected virtual void StartClientSetup()
+    {
+        Destroy(GetComponent<Collider2D>());
+    }
+    protected virtual void ServerFixedTick(float fixedDeltaTime) { }
+    public override void OnDestroy() { }
 }

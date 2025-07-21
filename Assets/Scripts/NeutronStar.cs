@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using static Star;
 
@@ -10,28 +11,16 @@ public class NeutronStar : OrbitingObject
     [SerializeField] private GameObject outerTrigger;
     private float pullForceFactor;
     private HashSet<PlayerBall> players = new HashSet<PlayerBall>();
+    private float pullScale;
+
     public void InitializeNeutronStar(float baseAge, float age, float pullForceFactor, float pullScale)
     {
         this.baseAge = baseAge;
         this.age = age;
+        this.pullScale = pullScale;
         this.pullForceFactor = pullForceFactor;
         outerTrigger.transform.localScale = new Vector3(pullScale / transform.localScale.x, pullScale / transform.localScale.y, 1f);
-    }
 
-    private void FixedUpdate()
-    {
-        foreach (PlayerBall player in players)
-        {
-            Vector2 direction = (transform.position - player.transform.position).normalized;
-            float distance = Vector2.Distance(transform.position, player.transform.position);
-            float pullForce = pullForceFactor / (distance * distance);
-            player.GetComponent<Rigidbody2D>().AddForce(direction * pullForce, ForceMode2D.Force);
-        }
-    }
-
-    protected override void StartSetup()
-    {
-        base.StartSetup();
         Manager.Instance.GameTimeUpdate += UpdateNeutronStarAge;
         OuterRadius outerRadius = outerTrigger.GetComponent<OuterRadius>();
         outerRadius.OnOuterRadiusEnter += (collider) =>
@@ -46,8 +35,33 @@ public class NeutronStar : OrbitingObject
         };
     }
 
+    protected override void StartServerSetup()
+    {
+        base.StartServerSetup();
+        InitializeOuterRadiusClientRpc(pullScale, default);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void InitializeOuterRadiusClientRpc(float pullScale, RpcParams rpcParams)
+    {
+        outerTrigger.transform.localScale = new Vector3(pullScale / transform.localScale.x, pullScale / transform.localScale.y, 1f);
+    }
+
+    protected override void ServerFixedTick(float fixedDeltaTime)
+    {
+        base.ServerFixedTick(fixedDeltaTime);
+        foreach (PlayerBall player in players)
+        {
+            Vector2 direction = (transform.position - player.transform.position).normalized;
+            float distance = Vector2.Distance(transform.position, player.transform.position);
+            float pullForce = pullForceFactor / (distance * distance);
+            player.GetComponent<Rigidbody2D>().AddForce(direction * pullForce, ForceMode2D.Force);
+        }
+    }
+
     public void UpdateNeutronStarAge(float time)
     {
+        if (!IsServer) return;
         if (destroyed) return;
         age = baseAge + time;
         if (age < 0)

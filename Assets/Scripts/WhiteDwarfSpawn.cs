@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 
 public class WhiteDwarfSpawn : OrbitingObjectSpawn
 {
@@ -15,10 +16,12 @@ public class WhiteDwarfSpawn : OrbitingObjectSpawn
 
     public override void SpawnObject()
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         GameObject whiteDwarf = Instantiate(Manager.Instance.LoadedPrefabs.WhiteDwarf, ObjPosition, Quaternion.identity);
         WhiteDwarf whiteDwarfComp = whiteDwarf.GetComponent<WhiteDwarf>();
         whiteDwarfComp.InitializeCelestialObject(scale);
         whiteDwarfComp.InitializeOrbit(transform.position, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
         whiteDwarfComp.InitializeWhiteDwarf(0, 0, nebulaScale, accelFactor);
+        whiteDwarf.GetComponent<NetworkObject>().Spawn();
     }
 }

@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public abstract class CelestialObjectSpawn : MonoBehaviour
@@ -11,6 +12,7 @@ public abstract class CelestialObjectSpawn : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         SpawnObject();
     }
 

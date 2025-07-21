@@ -167,7 +167,13 @@ public class Manager : MonoBehaviour
     public void NextPlayerTurn()
     {
         if (!NetworkManager.Singleton.IsServer) return;
+        int prevPlayer = playerTurn;
         playerTurn = (playerTurn + 1) % playerIds.Count;
+        while (playerBalls[playerIds[playerTurn]] == null)
+        {
+            if (playerTurn == prevPlayer) return; // change to trigger all players dead logic
+            playerTurn = (playerTurn + 1) % playerIds.Count;
+        }
         Messenger.Instance.PlayerTurn(playerIds[playerTurn]);
     }
 

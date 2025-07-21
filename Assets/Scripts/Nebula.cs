@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
 public class Nebula : MonoBehaviour
 {
@@ -12,18 +13,21 @@ public class Nebula : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         if (collision.gameObject.layer != LayerMask.NameToLayer("Player")) return;
         playersInNebula.Add(collision.GetComponent<PlayerBall>());
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         if (collision.gameObject.layer != LayerMask.NameToLayer("Player")) return;
         playersInNebula.Remove(collision.GetComponent<PlayerBall>());
     }
 
     private void FixedUpdate()
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         foreach (PlayerBall player in playersInNebula)
         {
             Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
