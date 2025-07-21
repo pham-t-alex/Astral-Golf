@@ -1,8 +1,11 @@
 using UnityEngine;
 using System;
+using Unity.Netcode;
+using System.Collections.Generic;
 
 public class Manager : MonoBehaviour
 {
+    private bool gameStarted = false;
     [Header("Game Settings")]
     [Tooltip("The maximum age of a star in seconds, after which it will change state")]
     [SerializeField] private float starMaxAge = 1800f;
@@ -37,8 +40,9 @@ public class Manager : MonoBehaviour
     private static Manager instance;
     public static Manager Instance => instance;
 
-    [Tooltip("Camera")]
-    [SerializeField] private Camera mainCamera;
+    [Tooltip("Player spawn")]
+    [SerializeField] private Transform playerSpawn;
+    [SerializeField] private float playerSpawnRadius = 3f;
 
     private float gameTime = 0f;
     public float GameTime => gameTime;
@@ -51,6 +55,7 @@ public class Manager : MonoBehaviour
     public event Action<float> OrbitTimeUpdate;
 
     private float maxNaturalTime = 0f;
+    private int playerTurn = 0;
 
     public enum TimeDistortionType
     {
@@ -74,19 +79,38 @@ public class Manager : MonoBehaviour
     private bool distortionActive = false;
     private TimeDistortion timeDistortion;
 
+    private List<ulong> playerIds = new List<ulong>();
+    private Dictionary<ulong, PlayerBall> playerBalls = new Dictionary<ulong, PlayerBall>();
+
     private void Awake()
     {
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            Destroy(this);
+            return;
+        }
         instance = this;
         GameTimeUpdate += (time) => OrbitTimeUpdate?.Invoke(time + orbitTimeDisplacement);
     }
 
     private void Start()
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         maxNaturalTime = starMaxAge + redGiantMaxAge + maxTimeAfterAllStarsDied;
+        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            playerIds.Add(clientId);
+            GameObject player = Instantiate(loadedPrefabs.PlayerBall, playerSpawn.position + (Quaternion.Euler(0, 0, UnityEngine.Random.Range(0, 359)) * (UnityEngine.Random.Range(0, playerSpawnRadius) * Vector2.right)), Quaternion.identity);
+            playerBalls.Add(clientId, player.GetComponent<PlayerBall>());
+            ServerSidePlayerSetup(player.GetComponent<PlayerBall>(), clientId);
+            player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+        }
+        ServerSideStartGame();
     }
 
     private void Update()
     {
+        if (!NetworkManager.Singleton.IsServer || !gameStarted) return;
         if (distortionActive)
         {
             switch (timeDistortion.type)
@@ -125,31 +149,45 @@ public class Manager : MonoBehaviour
         }
     }
 
-    private void LateUpdate()
+    public void ServerSidePlayerSetup(PlayerBall player, ulong clientId)
     {
-        PlayerBall player = FindFirstObjectByType<PlayerBall>();
-        if (mainCamera != null && player != null)
-        {
-            float z = mainCamera.transform.position.z;
-            if (Vector2.Distance(mainCamera.transform.position, player.transform.position) < 0.1f)
-            {
-                mainCamera.transform.position = new Vector3(player.transform.position.x, player.transform.position.y, z);
-            }
-            else
-            {
-                mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, new Vector3(player.transform.position.x, player.transform.position.y, z), 2f * Time.deltaTime);
-            }
-        }
+        if (!NetworkManager.Singleton.IsServer) return;
+    }
+
+    public void ServerSideStartGame()
+    {
+        if (!NetworkManager.Singleton.IsServer) return;
+        gameTime = 0f;
+        orbitTimeDisplacement = 0f;
+        distortionActive = false;
+        gameStarted = true;
+        Messenger.Instance.PlayerTurn(playerIds[0]);
+    }
+
+    public void NextPlayerTurn()
+    {
+        if (!NetworkManager.Singleton.IsServer) return;
+        playerTurn = (playerTurn + 1) % playerIds.Count;
+        Messenger.Instance.PlayerTurn(playerIds[playerTurn]);
     }
 
     public void StartTimeDistortion(TimeDistortion distortion)
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         timeDistortion = distortion;
         distortionActive = true;
     }
 
     public void StopTimeDistortion()
     {
+        if (!NetworkManager.Singleton.IsServer) return;
         distortionActive = false;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (Application.isPlaying) return;
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(playerSpawn.position, playerSpawnRadius);
     }
 }

@@ -22,12 +22,12 @@ public abstract class OrbitingObject : CelestialObject
         this.angularVelocity = angularVelocity;
 
         Vector2 prevPoint = EllipsePosition(orbitCenter, semiMajor, semiMinor, rotation, 0);
-        int segments = VisualManager.Instance.OrbitSegments;
+        int segments = ClientManager.Instance.OrbitSegments;
         for (int i = 1; i <= segments; i++)
         {
             float newAngle = ((float)i / segments) * 2 * Mathf.PI;
             Vector2 point = EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, newAngle);
-            GameObject g = Instantiate(Manager.Instance.LoadedPrefabs.StarOrbitLine, prevPoint, Quaternion.identity);
+            GameObject g = Instantiate(ClientManager.Instance.LoadedPrefabs.StarOrbitLine, prevPoint, Quaternion.identity);
             g.GetComponent<LineRenderer>().SetPosition(1, point - prevPoint);
             orbitLines.Add(g);
             prevPoint = point;

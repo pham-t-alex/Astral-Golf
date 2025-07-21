@@ -90,7 +90,7 @@ public class Star : OrbitingObject
             return;
         }
         // supernova
-        GameObject nova = Instantiate(Manager.Instance.LoadedPrefabs.SupernovaEffect, transform.position, Quaternion.identity);
+        GameObject nova = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaEffect, transform.position, Quaternion.identity);
         nova.transform.localScale = Vector3.one * scale;
         Destroy(nova, 5f);
 
@@ -135,7 +135,7 @@ public class Star : OrbitingObject
                 Vector2 redGiantPosition = EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, Mathf.Deg2Rad * (startingAngle + (Manager.Instance.OrbitTime + Manager.Instance.StarMaxAge - age) * angularVelocity));
                 if (redGiantProjection == null)
                 {
-                    redGiantProjection = Instantiate(Manager.Instance.LoadedPrefabs.RedGiantProjection, redGiantPosition, Quaternion.identity);
+                    redGiantProjection = Instantiate(ClientManager.Instance.LoadedPrefabs.RedGiantProjection, redGiantPosition, Quaternion.identity);
                 }
                 redGiantProjection.transform.position = redGiantPosition;
             }
@@ -155,13 +155,13 @@ public class Star : OrbitingObject
                 switch (fate)
                 {
                     case StarFate.Nebula:
-                        deathProjection = Instantiate(Manager.Instance.LoadedPrefabs.WhiteDwarfProjection, deathPosition, Quaternion.identity);
+                        deathProjection = Instantiate(ClientManager.Instance.LoadedPrefabs.WhiteDwarfProjection, deathPosition, Quaternion.identity);
                         break;
                     case StarFate.NeutronStar:
-                        deathProjection = Instantiate(Manager.Instance.LoadedPrefabs.NeutronStarProjection, deathPosition, Quaternion.identity);
+                        deathProjection = Instantiate(ClientManager.Instance.LoadedPrefabs.NeutronStarProjection, deathPosition, Quaternion.identity);
                         break;
                     case StarFate.BlackHole:
-                        deathProjection = Instantiate(Manager.Instance.LoadedPrefabs.BlackHoleProjection, deathPosition, Quaternion.identity);
+                        deathProjection = Instantiate(ClientManager.Instance.LoadedPrefabs.BlackHoleProjection, deathPosition, Quaternion.identity);
                         break;
                 }
             }

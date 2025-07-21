@@ -1,21 +1,20 @@
+using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class UIManager : MonoBehaviour
 {
     private static UIManager instance;
     public static UIManager Instance => instance;
+    [SerializeField] private GameObject turnIndicator;
 
     private void Awake()
     {
-        if (instance == null)
+        if (!NetworkManager.Singleton.IsClient)
         {
-            instance = this;
+            Destroy(this);
+            return;
         }
-        else
-        {
-            Destroy(gameObject);
-        }
+        instance = this;
     }
 
     private bool timeDistortionButtonPressed = false;
@@ -50,5 +49,21 @@ public class UIManager : MonoBehaviour
             Manager.Instance.StopTimeDistortion();
         }
         timeDistortionButtonPressed = false;
+    }
+
+    public void SetTurnIndicatorActive()
+    {
+        if (turnIndicator != null)
+        {
+            turnIndicator.SetActive(true);
+        }
+    }
+
+    public void SetTurnIndicatorInactive()
+    {
+        if (turnIndicator != null)
+        {
+            turnIndicator.SetActive(false);
+        }
     }
 }

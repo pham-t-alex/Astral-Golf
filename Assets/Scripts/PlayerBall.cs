@@ -1,11 +1,12 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerBall : MonoBehaviour
+public class PlayerBall : NetworkBehaviour
 {
     [Header("Player Stats")]
     [Tooltip("The force multiplier applied to the ball when launched.")]
-    [SerializeField] private float launchForce = 1f;
+    [SerializeField] private float launchForce = 100f;
 
     [Header("Visual Stats")]
     [Tooltip("Scaling for the launch line visualizer.")]
@@ -16,7 +17,7 @@ public class PlayerBall : MonoBehaviour
     [SerializeField] private float moveVelocityThreshold = 0.2f;
     public float MoveVelocityThreshold => moveVelocityThreshold;
     [Tooltip("Threshold for mouse movement to trigger launch")]
-    [SerializeField] private float launchThreshold = 5f;
+    [SerializeField] private float launchThreshold = 0.2f;
 
     // Components
     private PlayerInput playerInput;
@@ -24,14 +25,13 @@ public class PlayerBall : MonoBehaviour
 
     // Input action for mouse position
     private InputAction mousePosition;
-    // The mouse position when the left mouse is pressed
+    // The mouse world position when the left mouse is pressed
     private Vector2 startingMousePos;
 
-    // Whether the player is eligible for movement
-    private bool canMove = true;
-    // Whether the player is moving from a launch
-    private bool isMovingFromLaunch = false;
-    public bool IsMovingFromLaunch => isMovingFromLaunch;
+    // Server side
+    // Whether the player has completed their turn
+    private bool completedTurn = false;
+
     // Whether the ball is selected
     private bool ballSelected = false;
     // The launch line
@@ -40,64 +40,87 @@ public class PlayerBall : MonoBehaviour
     private Wormhole exitWormhole;
     public Wormhole ExitWormhole => exitWormhole;
 
-    private void Awake()
-    {
-        playerInput = GetComponent<PlayerInput>();
-        rb = GetComponent<Rigidbody2D>();
-
-        mousePosition = playerInput.actions["MousePosition"];
-    }
-
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (IsServer)
+        {
+            rb = GetComponent<Rigidbody2D>();
+        }
+        else
+        {
+            Destroy(GetComponent<Rigidbody2D>());
+        }
+        if (IsClient && IsOwner)
+        {
+            playerInput = GetComponent<PlayerInput>();
+            mousePosition = playerInput.actions["MousePosition"];
+            ClientManager.Instance.SetPlayer(this);
+        }
+        else
+        {
+            Destroy(GetComponent<PlayerInput>());
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
-        if (rb.linearVelocity.magnitude < moveVelocityThreshold) // stop the ball movement if it is almost still
+        if (IsServer)
         {
-            if (rb.linearVelocity.magnitude > 0)
+            if (rb.linearVelocity.magnitude < moveVelocityThreshold) // stop the ball movement if it is almost still
             {
-                rb.linearVelocity = Vector2.zero;
+                if (rb.linearVelocity.magnitude > 0)
+                {
+                    rb.linearVelocity = Vector2.zero;
+                }
+                if (completedTurn)
+                {
+                    completedTurn = false;
+                    Manager.Instance.NextPlayerTurn();
+                }
             }
-            canMove = true; // reset when ball is still
-            isMovingFromLaunch = false;
         }
-        if (ballSelected && launchLine != null)
+        if (IsClient && IsOwner)
         {
-            launchLine.SetPosition(1, launchLineScale * (startingMousePos - mousePosition.ReadValue<Vector2>()));
+            if (ballSelected && launchLine != null)
+            {
+                launchLine.SetPosition(1, launchLineScale * (startingMousePos - (Vector2)Camera.main.ScreenToWorldPoint(mousePosition.ReadValue<Vector2>())));
+            }
         }
     }
 
     public void HandleLMouse(InputAction.CallbackContext ctx)
     {
-        if (!canMove) return;
+        if (!(IsClient && IsOwner && ClientManager.Instance.CurrentTurn)) return;
         if (ctx.started)
         {
-            startingMousePos = mousePosition.ReadValue<Vector2>();
-            Vector2 worldMousePos = Camera.main.ScreenToWorldPoint(startingMousePos);
+            Vector2 mousePos = mousePosition.ReadValue<Vector2>();
+            startingMousePos = Camera.main.ScreenToWorldPoint(mousePos);
             LayerMask layerMask = LayerMask.GetMask("Player");
-            RaycastHit2D hit = Physics2D.Raycast(worldMousePos, Vector2.zero, Mathf.Infinity, layerMask);
+            RaycastHit2D hit = Physics2D.Raycast(startingMousePos, Vector2.zero, Mathf.Infinity, layerMask);
             
-            if (hit.collider == null) return;
+            if (hit.collider == null || hit.collider.gameObject != gameObject) return;
 
             ballSelected = true; // ball is selected
-            launchLine = Instantiate(Manager.Instance.LoadedPrefabs.ShootLine, transform).GetComponent<LineRenderer>();
+            launchLine = Instantiate(ClientManager.Instance.LoadedPrefabs.ShootLine, transform).GetComponent<LineRenderer>();
         }
         else if (ctx.canceled && ballSelected)
         {
-            Vector2 newMousePos = mousePosition.ReadValue<Vector2>();
+            Vector2 newMousePos = Camera.main.ScreenToWorldPoint(mousePosition.ReadValue<Vector2>());
             Vector2 direction = startingMousePos - newMousePos;
             if (direction.magnitude > launchThreshold) // don't move if mouse barely moved
             {
-                rb.AddForce(direction * launchForce, ForceMode2D.Impulse);
+                ClientManager.Instance.PlayerLaunch(); // notify the client manager that the player is launching
+                LaunchRpc(direction, default);
+                startingMousePos = Vector2.zero; // reset starting position
             }
-            startingMousePos = Vector2.zero; // reset starting position
-            canMove = false;
-            isMovingFromLaunch = true;
             ballSelected = false; // unselects ball
             if (launchLine != null)
             {
@@ -107,8 +130,16 @@ public class PlayerBall : MonoBehaviour
         }
     }
 
+    [Rpc(SendTo.Server)]
+    public void LaunchRpc(Vector2 direction, RpcParams rpcParams)
+    {
+        completedTurn = true;
+        rb.AddForce(direction * launchForce, ForceMode2D.Impulse);
+    }
+
     public void SetExitWormhole(Wormhole w)
     {
+        if (!IsServer) return;
         exitWormhole = w;
     }
 }
