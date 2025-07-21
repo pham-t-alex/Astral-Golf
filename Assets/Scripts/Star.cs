@@ -1,5 +1,4 @@
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Star : OrbitingObject
@@ -20,7 +19,9 @@ public class Star : OrbitingObject
     private float baseAge;
     private float age = 0;
     private NetworkVariable<StarType> type = new NetworkVariable<StarType>(StarType.MainSequence);
+    private StarType typeInit;
     private NetworkVariable<StarFate> fate = new NetworkVariable<StarFate>(StarFate.Nebula);
+    private StarFate fateInit;
     private bool destroyed = false;
 
     private GameObject projection;
@@ -48,8 +49,8 @@ public class Star : OrbitingObject
     {
         this.baseAge = baseAge;
         this.age = age;
-        this.type.Value = type;
-        this.fate.Value = fate;
+        typeInit = type;
+        fateInit = fate;
 
         Manager.Instance.GameTimeUpdate += UpdateStarAge;
     }
@@ -58,6 +59,13 @@ public class Star : OrbitingObject
     {
         base.StartClientSetup();
         projectionData.OnValueChanged += HandleProjectionDataChange;
+    }
+
+    protected override void StartServerSetup()
+    {
+        base.StartServerSetup();
+        fate.Value = fateInit;
+        type.Value = typeInit;
     }
 
     void HandleProjectionDataChange(ProjectionData prev, ProjectionData newData)

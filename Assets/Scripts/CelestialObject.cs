@@ -46,7 +46,7 @@ public abstract class CelestialObject : NetworkBehaviour
     protected virtual void StartServerSetup() { }
     protected virtual void StartClientSetup()
     {
-        Destroy(GetComponent<Collider2D>());
+        if (!IsServer) Destroy(GetComponent<Collider2D>());
     }
     protected virtual void ServerFixedTick(float fixedDeltaTime) { }
     public override void OnDestroy() { }

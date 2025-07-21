@@ -74,6 +74,7 @@ public class NeutronStar : OrbitingObject
             starComp.InitializeCelestialObject(scale);
             starComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
             starComp.InitializeStar(newBaseAge, newAge, StarType.RedGiant, StarFate.NeutronStar);
+            newStar.GetComponent<NetworkObject>().Spawn();
             Destroy(gameObject);
             return;
         }

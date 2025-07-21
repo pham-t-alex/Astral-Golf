@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public abstract class OrbitingObject : CelestialObject
@@ -9,6 +10,7 @@ public abstract class OrbitingObject : CelestialObject
     protected float ellipticalRotation;
     protected float startingAngle;
     protected float angularVelocity;
+    
     private Rigidbody2D rb;
     private List<GameObject> orbitLines = new List<GameObject>();
 
@@ -22,18 +24,6 @@ public abstract class OrbitingObject : CelestialObject
         this.angularVelocity = angularVelocity;
 
         rb = GetComponent<Rigidbody2D>();
-
-        //Vector2 prevPoint = EllipsePosition(orbitCenter, semiMajor, semiMinor, rotation, 0);
-        //int segments = ClientManager.Instance.OrbitSegments;
-        //for (int i = 1; i <= segments; i++)
-        //{
-        //    float newAngle = ((float)i / segments) * 2 * Mathf.PI;
-        //    Vector2 point = EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, newAngle);
-        //    GameObject g = Instantiate(ClientManager.Instance.LoadedPrefabs.StarOrbitLine, prevPoint, Quaternion.identity);
-        //    g.GetComponent<LineRenderer>().SetPosition(1, point - prevPoint);
-        //    orbitLines.Add(g);
-        //    prevPoint = point;
-        //}
     }
 
     private void UpdateOrbit(float orbitTime)
@@ -43,10 +33,32 @@ public abstract class OrbitingObject : CelestialObject
         rb.MovePosition(EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, Mathf.Deg2Rad * angle));
     }
 
+    protected override void StartServerSetup()
+    {
+        base.StartServerSetup();
+        SetupOrbitClientRpc(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, default);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void SetupOrbitClientRpc(Vector2 center, float semiMajor, float semiMinor, float rotation, RpcParams rpcParams)
+    {
+        Vector2 prevPoint = EllipsePosition(center, semiMajor, semiMinor, rotation, 0);
+        int segments = ClientManager.Instance.OrbitSegments;
+        for (int i = 1; i <= segments; i++)
+        {
+            float newAngle = ((float)i / segments) * 2 * Mathf.PI;
+            Vector2 point = EllipsePosition(center, semiMajor, semiMinor, rotation, newAngle);
+            GameObject g = Instantiate(ClientManager.Instance.LoadedPrefabs.StarOrbitLine, prevPoint, Quaternion.identity);
+            g.GetComponent<LineRenderer>().SetPosition(1, point - prevPoint);
+            orbitLines.Add(g);
+            prevPoint = point;
+        }
+    }
+
     protected override void StartClientSetup()
     {
         base.StartClientSetup();
-        Destroy(GetComponent<Rigidbody2D>());
+        if (!IsServer) Destroy(GetComponent<Rigidbody2D>());
     }
 
     protected override void ServerFixedTick(float fixedDeltaTime)

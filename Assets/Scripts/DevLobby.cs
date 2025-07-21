@@ -25,6 +25,11 @@ public class DevLobby : MonoBehaviour
         NetworkManager.Singleton.StartServer();
     }
 
+    public void StartHost()
+    {
+        NetworkManager.Singleton.StartHost();
+    }
+
     public void StartGame()
     {
         NetworkManager.Singleton.SceneManager.LoadScene("Space", UnityEngine.SceneManagement.LoadSceneMode.Single);

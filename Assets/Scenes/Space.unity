@@ -2562,14 +2562,10 @@ MonoBehaviour:
   supernovaForce: 10
   projectionTime: 45
   maxTimeAfterAllStarsDied: 60
-  timeForwardFactor: 10
-  timeForwardAcceleratedFactor: 20
-  timeBackwardFactor: 10
-  timeBackwardAcceleratedFactor: 20
-  orbitForwardFactor: 2
-  orbitForwardAcceleratedFactor: 5
-  orbitBackwardFactor: 2
-  orbitBackwardAcceleratedFactor: 5
+  normalUnit: 1
+  acceleratedUnit: 3
+  timeFactor: 5
+  orbitFactor: 3
   loadedPrefabs: {fileID: 11400000, guid: d4900ff1b126b56419b9bab079e6e7f7, type: 2}
   playerSpawn: {fileID: 874509594}
   playerSpawnRadius: 3

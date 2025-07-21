@@ -24,14 +24,18 @@ public class Manager : MonoBehaviour
     public float MaxTimeAfterAllStarsDied => maxTimeAfterAllStarsDied;
 
     [Header("Time Distortion Settings")]
-    [SerializeField] private float timeForwardFactor = 2f;
-    [SerializeField] private float timeForwardAcceleratedFactor = 5f;
-    [SerializeField] private float timeBackwardFactor = 2f;
-    [SerializeField] private float timeBackwardAcceleratedFactor = 5f;
-    [SerializeField] private float orbitForwardFactor = 2f;
-    [SerializeField] private float orbitForwardAcceleratedFactor = 5f;
-    [SerializeField] private float orbitBackwardFactor = 2f;
-    [SerializeField] private float orbitBackwardAcceleratedFactor = 5f;
+    [Tooltip("Normal time distortion unit")]
+    [SerializeField] private float normalUnit = 1f;
+    [Tooltip("Accelerated time distortion unit")]
+    [SerializeField] private float acceleratedUnit = 3f;
+
+    [Tooltip("Time distortion multiplier")]
+    [SerializeField] private float timeFactor = 5f;
+    [Tooltip("Orbit distortion multiplier")]
+    [SerializeField] private float orbitFactor = 2f;
+
+    // Formula: add up the units contributed by all players (backwards would be negative), then multiply the result by the factor
+    // The result is the multiplier applied to Time.deltaTime
 
     [Header("Other")]
     [Tooltip("Prefabs")]
@@ -62,7 +66,7 @@ public class Manager : MonoBehaviour
         Time,
         Orbit
     }
-    public struct TimeDistortion
+    public struct TimeDistortion : INetworkSerializable
     {
         public TimeDistortionType type;
         public bool accelerated;
@@ -74,13 +78,60 @@ public class Manager : MonoBehaviour
             this.accelerated = accelerated;
             this.forward = forward;
         }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref type);
+            serializer.SerializeValue(ref accelerated);
+            serializer.SerializeValue(ref forward);
+        }
     }
 
-    private bool distortionActive = false;
-    private TimeDistortion timeDistortion;
+    public bool DistortionActive => playerTimeDistortions.Count > 0;
 
     private List<ulong> playerIds = new List<ulong>();
     private Dictionary<ulong, PlayerBall> playerBalls = new Dictionary<ulong, PlayerBall>();
+    private Dictionary<ulong, TimeDistortion> playerTimeDistortions = new Dictionary<ulong, TimeDistortion>();
+    private float NetTimeDistortionFactor
+    {
+        get
+        {
+            float timeDistortionUnits = 0;
+            foreach (TimeDistortion timeDistortion in playerTimeDistortions.Values)
+            {
+                if (timeDistortion.type == TimeDistortionType.Orbit) continue;
+                if (timeDistortion.forward)
+                {
+                    timeDistortionUnits += timeDistortion.accelerated ? acceleratedUnit : normalUnit;
+                }
+                else
+                {
+                    timeDistortionUnits -= timeDistortion.accelerated ? acceleratedUnit : normalUnit;
+                }
+            }
+            return timeDistortionUnits * timeFactor;
+        }
+    }
+    private float NetOrbitDistortionFactor
+    {
+        get
+        {
+            float timeDistortionUnits = 0;
+            foreach (TimeDistortion timeDistortion in playerTimeDistortions.Values)
+            {
+                if (timeDistortion.type == TimeDistortionType.Time) continue;
+                if (timeDistortion.forward)
+                {
+                    timeDistortionUnits += timeDistortion.accelerated ? acceleratedUnit : normalUnit;
+                }
+                else
+                {
+                    timeDistortionUnits -= timeDistortion.accelerated ? acceleratedUnit : normalUnit;
+                }
+            }
+            return timeDistortionUnits * orbitFactor;
+        }
+    }
 
     private void Awake()
     {
@@ -111,35 +162,40 @@ public class Manager : MonoBehaviour
     private void Update()
     {
         if (!NetworkManager.Singleton.IsServer || !gameStarted) return;
-        if (distortionActive)
+        if (DistortionActive)
         {
-            switch (timeDistortion.type)
-            {
-                case TimeDistortionType.Time:
-                    if (timeDistortion.forward)
-                    {
-                        gameTime += timeDistortion.accelerated ? timeForwardAcceleratedFactor * Time.deltaTime : timeForwardFactor * Time.deltaTime;
-                        gameTime = Mathf.Min(gameTime, maxNaturalTime);
-                    }
-                    else
-                    {
-                        gameTime -= timeDistortion.accelerated ? timeBackwardAcceleratedFactor * Time.deltaTime : timeBackwardFactor * Time.deltaTime;
-                        gameTime = Mathf.Max(gameTime, 0f);
-                    }
-                    GameTimeUpdate?.Invoke(gameTime);
-                    break;
-                case TimeDistortionType.Orbit:
-                    if (timeDistortion.forward)
-                    {
-                        orbitTimeDisplacement += timeDistortion.accelerated ? orbitForwardAcceleratedFactor * Time.deltaTime : orbitForwardFactor * Time.deltaTime;
-                    }
-                    else
-                    {
-                        orbitTimeDisplacement -= timeDistortion.accelerated ? orbitBackwardAcceleratedFactor * Time.deltaTime : orbitBackwardFactor * Time.deltaTime;
-                    }
-                    OrbitTimeUpdate?.Invoke(gameTime + orbitTimeDisplacement);
-                break;
-            }
+            gameTime = Mathf.Clamp(gameTime + (NetTimeDistortionFactor * Time.deltaTime), 0, maxNaturalTime);
+            Debug.Log(gameTime);
+            orbitTimeDisplacement += NetOrbitDistortionFactor * Time.deltaTime;
+            GameTimeUpdate?.Invoke(gameTime); // updates orbit time as well
+
+            //switch (timeDistortion.type)
+            //{
+            //    case TimeDistortionType.Time:
+            //        if (timeDistortion.forward)
+            //        {
+            //            gameTime += timeDistortion.accelerated ? timeForwardAcceleratedFactor * Time.deltaTime : timeForwardFactor * Time.deltaTime;
+            //            gameTime = Mathf.Min(gameTime, maxNaturalTime);
+            //        }
+            //        else
+            //        {
+            //            gameTime -= timeDistortion.accelerated ? timeBackwardAcceleratedFactor * Time.deltaTime : timeBackwardFactor * Time.deltaTime;
+            //            gameTime = Mathf.Max(gameTime, 0f);
+            //        }
+            //        GameTimeUpdate?.Invoke(gameTime);
+            //        break;
+            //    case TimeDistortionType.Orbit:
+            //        if (timeDistortion.forward)
+            //        {
+            //            orbitTimeDisplacement += timeDistortion.accelerated ? orbitForwardAcceleratedFactor * Time.deltaTime : orbitForwardFactor * Time.deltaTime;
+            //        }
+            //        else
+            //        {
+            //            orbitTimeDisplacement -= timeDistortion.accelerated ? orbitBackwardAcceleratedFactor * Time.deltaTime : orbitBackwardFactor * Time.deltaTime;
+            //        }
+            //        OrbitTimeUpdate?.Invoke(gameTime + orbitTimeDisplacement);
+            //    break;
+            //}
         }
         else
         {
@@ -159,7 +215,6 @@ public class Manager : MonoBehaviour
         if (!NetworkManager.Singleton.IsServer) return;
         gameTime = 0f;
         orbitTimeDisplacement = 0f;
-        distortionActive = false;
         gameStarted = true;
         Messenger.Instance.PlayerTurn(playerIds[0]);
     }
@@ -177,17 +232,16 @@ public class Manager : MonoBehaviour
         Messenger.Instance.PlayerTurn(playerIds[playerTurn]);
     }
 
-    public void StartTimeDistortion(TimeDistortion distortion)
+    public void StartTimeDistortion(ulong clientId, TimeDistortion distortion)
     {
         if (!NetworkManager.Singleton.IsServer) return;
-        timeDistortion = distortion;
-        distortionActive = true;
+        playerTimeDistortions[clientId] = distortion;
     }
 
-    public void StopTimeDistortion()
+    public void EndTimeDistortion(ulong clientId)
     {
         if (!NetworkManager.Singleton.IsServer) return;
-        distortionActive = false;
+        playerTimeDistortions.Remove(clientId);
     }
 
     private void OnDrawGizmos()

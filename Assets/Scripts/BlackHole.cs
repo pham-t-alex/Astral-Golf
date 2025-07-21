@@ -81,6 +81,7 @@ public class BlackHole : OrbitingObject
             starComp.InitializeCelestialObject(scale);
             starComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
             starComp.InitializeStar(newBaseAge, newAge, StarType.RedGiant, StarFate.BlackHole);
+            newStar.GetComponent<NetworkObject>().Spawn();
             Destroy(gameObject);
             return;
         }

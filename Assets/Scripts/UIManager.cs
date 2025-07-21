@@ -21,32 +21,32 @@ public class UIManager : MonoBehaviour
     public void HandleTimeForward(bool accelerated)
     {
         timeDistortionButtonPressed = true;
-        Manager.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Time, accelerated, true));
+        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Time, accelerated, true));
     }
 
     public void HandleTimeBackward(bool accelerated)
     {
         timeDistortionButtonPressed = true;
-        Manager.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Time, accelerated, false));
+        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Time, accelerated, false));
     }
 
     public void HandleOrbitForward(bool accelerated)
     {
         timeDistortionButtonPressed = true;
-        Manager.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Orbit, accelerated, true));
+        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Orbit, accelerated, true));
     }
 
     public void HandleOrbitBackward(bool accelerated)
     {
         timeDistortionButtonPressed = true;
-        Manager.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Orbit, accelerated, false));
+        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Orbit, accelerated, false));
     }
 
     public void HandleDistortionReleased()
     {
         if (timeDistortionButtonPressed)
         {
-            Manager.Instance.StopTimeDistortion();
+            Messenger.Instance.EndTimeDistortion();
         }
         timeDistortionButtonPressed = false;
     }
