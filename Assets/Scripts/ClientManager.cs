@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Timers;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -5,11 +7,27 @@ public class ClientManager : MonoBehaviour
 {
     private static ClientManager instance;
     public static ClientManager Instance => instance;
-    
+
     [Header("Visual Settings")]
+    [SerializeField] private Transform orbitParent;
+    public Transform OrbitParent => orbitParent;
     [Tooltip("Number of segments to represent a star's orbit")]
     [SerializeField] private int orbitSegments = 100;
     public int OrbitSegments => orbitSegments;
+
+    [Tooltip("Gap between orbit ellipses")]
+    [SerializeField] private float orbitGap = 1f;
+    public float OrbitGap => orbitGap;
+
+    [Tooltip("Max orbit axes length")]
+    [SerializeField] private float maxOrbitAxes = 20f;
+    public float MaxOrbitAxes => maxOrbitAxes;
+
+    [Tooltip("Length of screen shake")]
+    [SerializeField] private float screenShakeDuration = 1f;
+
+    [Tooltip("Screen shake magnitude factor")]
+    [SerializeField] private float screenShakeFactor = 1f;
 
     [Header("Other")]
     [Tooltip("Client Prefabs")]
@@ -19,6 +37,8 @@ public class ClientManager : MonoBehaviour
     [SerializeField] private LoadedSprites loadedSprites;
     public LoadedSprites LoadedSprites => loadedSprites;
 
+    [Tooltip("Camera Root")]
+    [SerializeField] private Transform cameraRoot;
     [Tooltip("Camera")]
     [SerializeField] private Camera mainCamera;
 
@@ -40,14 +60,13 @@ public class ClientManager : MonoBehaviour
     {
         if (mainCamera != null && player != null)
         {
-            float z = mainCamera.transform.position.z;
             if (Vector2.Distance(mainCamera.transform.position, player.transform.position) < 0.1f)
             {
-                mainCamera.transform.position = new Vector3(player.transform.position.x, player.transform.position.y, z);
+                cameraRoot.position = player.transform.position;
             }
             else
             {
-                mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, new Vector3(player.transform.position.x, player.transform.position.y, z), 2f * Time.deltaTime);
+                cameraRoot.position = Vector3.Lerp(cameraRoot.position, player.transform.position, 2f * Time.deltaTime);
             }
         }
     }
@@ -57,7 +76,7 @@ public class ClientManager : MonoBehaviour
         player = playerBall;
         if (mainCamera != null)
         {
-            mainCamera.transform.position = new Vector3(player.transform.position.x, player.transform.position.y, mainCamera.transform.position.z);
+            cameraRoot.position = player.transform.position;
         }
     }
 
@@ -71,5 +90,30 @@ public class ClientManager : MonoBehaviour
     {
         currentTurn = false;
         UIManager.Instance.SetTurnIndicatorInactive();
+    }
+
+    public void TriggerScreenShake(float strength)
+    {
+        StartCoroutine(ScreenShake(strength));
+    }
+
+    private IEnumerator ScreenShake(float strength)
+    {
+        float time = 0f;
+        float adjustedStrength = screenShakeFactor * strength;
+        float duration = screenShakeDuration;
+
+        while (time < screenShakeDuration)
+        {
+            // screen shake fade
+            float factor = Mathf.Lerp(1, 0, time / screenShakeDuration);
+            mainCamera.transform.localPosition = new Vector3(factor * Random.Range(-adjustedStrength, adjustedStrength),
+                factor * Random.Range(-adjustedStrength, adjustedStrength), mainCamera.transform.localPosition.z);
+
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        mainCamera.transform.localPosition = new Vector3(0, 0, mainCamera.transform.localPosition.z);
     }
 }

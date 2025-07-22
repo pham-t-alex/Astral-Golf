@@ -1239,7 +1239,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1290771525}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &542385824
 GameObject:
@@ -2374,6 +2374,38 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1278884269}
   m_CullTransparentMesh: 1
+--- !u!1 &1290771524
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1290771525}
+  m_Layer: 0
+  m_Name: CameraRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1290771525
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290771524}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 519420032}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1297810306
 GameObject:
   m_ObjectHideFlags: 0
@@ -2559,7 +2591,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   starMaxAge: 300
   redGiantMaxAge: 60
-  supernovaForce: 100
+  supernovaForce: 1000
   projectionTime: 45
   maxTimeAfterAllStarsDied: 60
   normalUnit: 1
@@ -2581,9 +2613,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58a41220b56c3194fa3362d8fba4f2de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  orbitParent: {fileID: 0}
   orbitSegments: 50
+  orbitGap: 2
+  maxOrbitAxes: 20
+  screenShakeDuration: 2
+  screenShakeFactor: 20
   loadedPrefabs: {fileID: 11400000, guid: 9660d9798279b95459c560ebeffa3c39, type: 2}
   loadedSprites: {fileID: 11400000, guid: 26d0b40d4f4897649adcd0040cdd963a, type: 2}
+  cameraRoot: {fileID: 1290771525}
   mainCamera: {fileID: 519420031}
 --- !u!114 &1326592914
 MonoBehaviour:
@@ -4210,7 +4248,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 619394802}
-  - {fileID: 519420032}
+  - {fileID: 1290771525}
   - {fileID: 1326592911}
   - {fileID: 996393669}
   - {fileID: 8325907552311464643}

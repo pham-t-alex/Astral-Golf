@@ -194,7 +194,9 @@ public class Star : OrbitingObject
         {
             Rigidbody2D rb = collider.GetComponent<Rigidbody2D>();
             // linear dropoff (instead of inverse distance squared) so it's not as extreme
-            rb.AddForce(Manager.Instance.SupernovaForce * scale * (1 - (Vector2.Distance(transform.position, collider.transform.position) / maxDistance)) * (collider.transform.position - transform.position).normalized, ForceMode2D.Impulse);
+            float forceDistAdjustment = (1 - (Vector2.Distance(transform.position, collider.transform.position) / maxDistance));
+            rb.AddForce(Manager.Instance.SupernovaForce * scale * forceDistAdjustment * (collider.transform.position - transform.position).normalized, ForceMode2D.Impulse);
+            NovaScreenShakeRpc(scale * forceDistAdjustment, RpcTarget.Single(collider.GetComponent<NetworkObject>().OwnerClientId, RpcTargetUse.Temp));
         }
         if (fate.Value == StarFate.NeutronStar)
         {
@@ -224,6 +226,12 @@ public class Star : OrbitingObject
         nova.transform.localScale = Vector2.one * 10 * scale;
         GameObject shockwave = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaShockwave, transform.position, Quaternion.identity);
         shockwave.transform.localScale = Vector2.one * 20 * scale;
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    void NovaScreenShakeRpc(float strength, RpcParams rpcParams)
+    {
+        ClientManager.Instance.TriggerScreenShake(strength);
     }
 
     void LateUpdate()
