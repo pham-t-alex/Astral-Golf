@@ -9,8 +9,8 @@ public class NeutronStarSpawn : OrbitingObjectSpawn
     protected override void DrawObject(Vector2 position)
     {
         Gizmos.color = objColor;
-        Gizmos.DrawSphere(position, 0.5f * scale);
-        Gizmos.DrawWireSphere(position, 0.5f * pullScale);
+        Gizmos.DrawSphere(position, 3.7f * scale);
+        Gizmos.DrawWireSphere(position, 3.7f * pullScale);
     }
 
     public override void SpawnObject()

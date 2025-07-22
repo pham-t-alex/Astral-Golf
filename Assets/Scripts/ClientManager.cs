@@ -15,6 +15,9 @@ public class ClientManager : MonoBehaviour
     [Tooltip("Client Prefabs")]
     [SerializeField] private LoadedClientPrefabs loadedPrefabs;
     public LoadedClientPrefabs LoadedPrefabs => loadedPrefabs;
+    [Tooltip("Client Sprites")]
+    [SerializeField] private LoadedSprites loadedSprites;
+    public LoadedSprites LoadedSprites => loadedSprites;
 
     [Tooltip("Camera")]
     [SerializeField] private Camera mainCamera;

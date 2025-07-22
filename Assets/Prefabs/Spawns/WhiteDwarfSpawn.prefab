@@ -45,10 +45,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scale: 1
-  objColor: {r: 1, g: 0, b: 0.54901963, a: 1}
+  objColor: {r: 0.5518868, g: 0.78560865, b: 1, a: 1}
   semiMajorAxisLength: 1
   semiMinorAxisLength: 1
   ellipticalRotation: 0
   startingAngle: 0
   angularVelocity: 5
+  nebulaScale: 1
   accelFactor: 0.1

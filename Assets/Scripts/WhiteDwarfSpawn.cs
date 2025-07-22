@@ -9,9 +9,9 @@ public class WhiteDwarfSpawn : OrbitingObjectSpawn
     protected override void DrawObject(Vector2 position)
     {
         Gizmos.color = Color.white;
-        Gizmos.DrawSphere(position, 0.5f * scale);
+        Gizmos.DrawSphere(position, 7 * scale);
         Gizmos.color = objColor;
-        Gizmos.DrawWireSphere(position, 0.5f * nebulaScale);
+        Gizmos.DrawWireSphere(position, 2 * nebulaScale);
     }
 
     public override void SpawnObject()

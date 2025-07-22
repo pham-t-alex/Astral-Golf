@@ -58,6 +58,11 @@ public class Star : OrbitingObject
     protected override void StartClientSetup()
     {
         base.StartClientSetup();
+        if (type.Value == StarType.MainSequence && fate.Value != StarFate.Nebula)
+        {
+            GetComponent<SpriteRenderer>().sprite = ClientManager.Instance.LoadedSprites.BlueStar;
+        }
+        //HandleProjectionDataChange(default, projectionData.Value);
         projectionData.OnValueChanged += HandleProjectionDataChange;
     }
 
@@ -93,12 +98,12 @@ public class Star : OrbitingObject
                         break;
                 }
             }
+            projection.transform.position = newData.position;
         }
         else if (!newData.active && projection != null)
         {
             Destroy(projection);
         }
-        projection.transform.position = newData.position;
     }
 
     public void UpdateStarAge(float time)
@@ -175,17 +180,15 @@ public class Star : OrbitingObject
             WhiteDwarf whiteDwarfComp = whiteDwarf.GetComponent<WhiteDwarf>();
             whiteDwarfComp.InitializeCelestialObject(scale);
             whiteDwarfComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-            whiteDwarfComp.InitializeWhiteDwarf(newBaseAge, newAge, scale * Random.Range(4, 6), Random.Range(-20, 20));
+            whiteDwarfComp.InitializeWhiteDwarf(newBaseAge, newAge, scale * Random.Range(4f, 6f), Random.Range(-20f, 20f));
             whiteDwarf.GetComponent<NetworkObject>().Spawn();
             Destroy(gameObject);
             return;
         }
         // supernova
-        //GameObject nova = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaEffect, transform.position, Quaternion.identity);
-        //nova.transform.localScale = Vector3.one * scale;
-        //Destroy(nova, 5f);
+        SupernovaRpc(scale, default);
 
-        float maxDistance = 10f * scale; // max distance for supernova effect
+        float maxDistance = 100f * scale; // max distance for supernova effect
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, maxDistance, LayerMask.GetMask("Player"));
         foreach (Collider2D collider in colliders)
         {
@@ -199,7 +202,7 @@ public class Star : OrbitingObject
             NeutronStar neutronStarComp = neutronStar.GetComponent<NeutronStar>();
             neutronStarComp.InitializeCelestialObject(scale);
             neutronStarComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-            neutronStarComp.InitializeNeutronStar(newBaseAge, newAge, scale * Random.Range(15, 25), scale * Random.Range(4, 6));
+            neutronStarComp.InitializeNeutronStar(newBaseAge, newAge, scale * Random.Range(15f, 25f), scale * Random.Range(4f, 6f));
             neutronStar.GetComponent<NetworkObject>().Spawn();
         }
         else
@@ -208,10 +211,19 @@ public class Star : OrbitingObject
             BlackHole blackHoleComp = blackHole.GetComponent<BlackHole>();
             blackHoleComp.InitializeCelestialObject(scale);
             blackHoleComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-            blackHoleComp.InitializeBlackHole(newBaseAge, newAge, scale * Random.Range(15, 25), scale * Random.Range(4, 6));
+            blackHoleComp.InitializeBlackHole(newBaseAge, newAge, scale * Random.Range(15f, 25f), scale * Random.Range(4f, 6f));
             blackHole.GetComponent<NetworkObject>().Spawn();
         }
         Destroy(gameObject);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    void SupernovaRpc(float scale, RpcParams rpcParams)
+    {
+        GameObject nova = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaEffect, transform.position, Quaternion.Euler(0, 0, Random.Range(0f, 360f)));
+        nova.transform.localScale = Vector2.one * 10 * scale;
+        GameObject shockwave = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaShockwave, transform.position, Quaternion.identity);
+        shockwave.transform.localScale = Vector2.one * 20 * scale;
     }
 
     void LateUpdate()

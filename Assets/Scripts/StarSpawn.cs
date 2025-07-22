@@ -26,4 +26,10 @@ public class StarSpawn : OrbitingObjectSpawn
         starComp.InitializeStar(baseAge, baseAge, type, fate);
         star.GetComponent<NetworkObject>().Spawn();
     }
+
+    protected override void DrawObject(Vector2 position)
+    {
+        Gizmos.color = objColor;
+        Gizmos.DrawSphere(position, 7 * scale);
+    }
 }

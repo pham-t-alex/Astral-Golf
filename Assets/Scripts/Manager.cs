@@ -151,7 +151,7 @@ public class Manager : MonoBehaviour
         foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
         {
             playerIds.Add(clientId);
-            GameObject player = Instantiate(loadedPrefabs.PlayerBall, playerSpawn.position + (Quaternion.Euler(0, 0, UnityEngine.Random.Range(0, 359)) * (UnityEngine.Random.Range(0, playerSpawnRadius) * Vector2.right)), Quaternion.identity);
+            GameObject player = Instantiate(loadedPrefabs.PlayerBall, playerSpawn.position + (Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 360f)) * (UnityEngine.Random.Range(0, playerSpawnRadius) * Vector2.right)), Quaternion.identity);
             playerBalls.Add(clientId, player.GetComponent<PlayerBall>());
             ServerSidePlayerSetup(player.GetComponent<PlayerBall>(), clientId);
             player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
@@ -165,7 +165,6 @@ public class Manager : MonoBehaviour
         if (DistortionActive)
         {
             gameTime = Mathf.Clamp(gameTime + (NetTimeDistortionFactor * Time.deltaTime), 0, maxNaturalTime);
-            Debug.Log(gameTime);
             orbitTimeDisplacement += NetOrbitDistortionFactor * Time.deltaTime;
             GameTimeUpdate?.Invoke(gameTime); // updates orbit time as well
 

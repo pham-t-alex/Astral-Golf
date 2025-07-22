@@ -42,10 +42,10 @@ TagManager:
     uniqueID: 0
     locked: 0
   - name: Layer1
-    uniqueID: 3715444795
+    uniqueID: 3985180691
     locked: 0
   - name: CameraSortingLayer
-    uniqueID: 377979371
+    uniqueID: 1261835677
     locked: 0
   m_RenderingLayers:
   - Default

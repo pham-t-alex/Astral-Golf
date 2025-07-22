@@ -11,6 +11,10 @@ public class LoadedClientPrefabs : ScriptableObject
     [SerializeField] private GameObject supernovaEffect;
     public GameObject SupernovaEffect => supernovaEffect;
 
+    [Tooltip("Supernova shockwave prefab")]
+    [SerializeField] private GameObject supernovaShockwave;
+    public GameObject SupernovaShockwave => supernovaShockwave;
+
     [Tooltip("Red giant projection")]
     [SerializeField] private GameObject redGiantProjection;
     public GameObject RedGiantProjection => redGiantProjection;
