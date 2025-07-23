@@ -38,6 +38,9 @@ public class WhiteDwarf : OrbitingObject
     {
         if (!IsServer || collision.gameObject.layer != LayerMask.NameToLayer("Player")) return;
         // handle power up collection logic
+        PowerupData powerupData = Manager.Instance.Powerups[Random.Range(0, Manager.Instance.Powerups.Count)];
+        Powerup powerup = powerupData.GetPowerup();
+        collision.GetComponent<PlayerBall>().PickupPowerup(powerup);
         Destroy(gameObject);
     }
 

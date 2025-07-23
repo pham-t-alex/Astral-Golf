@@ -56,6 +56,10 @@ public class Manager : MonoBehaviour
     [SerializeField] private float hotTransitionTime = 3f;
     public float HotTransitionTime => hotTransitionTime;
 
+    [Tooltip("Powerups")]
+    [SerializeField] private List<PowerupData> powerups = new List<PowerupData>();
+    public List<PowerupData> Powerups => powerups;
+
     private float gameTime = 0f;
     public float GameTime => gameTime;
     public event Action<float> GameTimeUpdate;

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Timers;
 using Unity.Netcode;
 using UnityEngine;
@@ -42,6 +43,10 @@ public class ClientManager : MonoBehaviour
     [SerializeField] private Transform cameraRoot;
     [Tooltip("Camera")]
     [SerializeField] private Camera mainCamera;
+
+    [Tooltip("Powerups")]
+    [SerializeField] private List<PowerupData> powerups = new List<PowerupData>();
+    public List<PowerupData> Powerups => powerups;
 
     private PlayerBall player;
     public PlayerBall PlayerBall => player;

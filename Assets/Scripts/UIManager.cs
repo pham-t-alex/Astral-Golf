@@ -1,11 +1,17 @@
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     private static UIManager instance;
     public static UIManager Instance => instance;
     [SerializeField] private GameObject turnIndicator;
+
+    [SerializeField] private Image[] powerupImages;
+    private List<string> powerups = new List<string>();
 
     private void Awake()
     {
@@ -70,5 +76,46 @@ public class UIManager : MonoBehaviour
     public void AstralProject()
     {
         ClientManager.Instance.HandleAstralProject();
+    }
+
+    public void PickupPowerup(string name)
+    {
+        if (powerups.Count == 3)
+        {
+            powerups.RemoveAt(0);
+        }
+        powerups.Add(name);
+
+        for (int i = 0; i < powerupImages.Length; i++)
+        {
+            if (i > powerups.Count - 1)
+            {
+                powerupImages[i].sprite = null;
+                powerupImages[i].enabled = false;
+            }
+            else
+            {
+                powerupImages[i].sprite = GetPowerupSpriteByName(name);
+                powerupImages[i].enabled = true;
+            }
+        }
+    }
+
+    Sprite GetPowerupSpriteByName(string name)
+    {
+        foreach (PowerupData data in ClientManager.Instance.Powerups)
+        {
+            if (data.powerupName == name)
+            {
+                return data.sprite;
+            }
+        }
+        return null;
+    }
+
+    // On click with index
+    public void SelectPowerup(int index)
+    {
+        // implement
     }
 }

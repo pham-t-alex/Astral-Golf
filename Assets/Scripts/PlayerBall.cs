@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -39,6 +40,9 @@ public class PlayerBall : NetworkBehaviour
     // The wormhole the player is exiting through (ensures that the player won't teleport back through)
     private Wormhole exitWormhole;
     public Wormhole ExitWormhole => exitWormhole;
+
+    // Server side
+    private List<Powerup> powerups = new List<Powerup>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -150,5 +154,22 @@ public class PlayerBall : NetworkBehaviour
     {
         if (!IsServer) return;
         exitWormhole = w;
+    }
+
+    public void PickupPowerup(Powerup powerup)
+    {
+        if (!IsServer) return;
+        if (powerups.Count == 3)
+        {
+            powerups.RemoveAt(0);
+        }
+        powerups.Add(powerup);
+        PickupPowerupRpc(powerup.PowerupName, default);
+    }
+
+    [Rpc(SendTo.Owner)]
+    public void PickupPowerupRpc(string name, RpcParams rpcParams)
+    {
+        UIManager.Instance.PickupPowerup(name);
     }
 }
