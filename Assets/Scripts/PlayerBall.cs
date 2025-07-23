@@ -107,7 +107,7 @@ public class PlayerBall : NetworkBehaviour
 
     public void HandleLMouse(InputAction.CallbackContext ctx)
     {
-        if (!(IsClient && IsOwner && ClientManager.Instance.CurrentTurn)) return;
+        if (!(IsClient && IsOwner && ClientManager.Instance.CurrentTurn && !ClientManager.Instance.AstralProjecting)) return;
         if (ctx.started)
         {
             Vector2 mousePos = mousePosition.ReadValue<Vector2>();

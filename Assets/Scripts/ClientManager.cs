@@ -2,6 +2,7 @@ using System.Collections;
 using System.Timers;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ClientManager : MonoBehaviour
 {
@@ -43,8 +44,15 @@ public class ClientManager : MonoBehaviour
     [SerializeField] private Camera mainCamera;
 
     private PlayerBall player;
+    public PlayerBall PlayerBall => player;
+    private PlayerSoul soul;
+    public PlayerSoul Soul => soul;
+
     private bool currentTurn = false;
     public bool CurrentTurn => currentTurn;
+
+    private bool astralProjecting = false;
+    public bool AstralProjecting => astralProjecting;
 
     private void Awake()
     {
@@ -58,15 +66,16 @@ public class ClientManager : MonoBehaviour
 
     private void LateUpdate()
     {
+        Transform target = astralProjecting ? soul.transform : player.transform;
         if (mainCamera != null && player != null)
         {
-            if (Vector2.Distance(mainCamera.transform.position, player.transform.position) < 0.1f)
+            if (Vector2.Distance(mainCamera.transform.position, target.position) < 0.1f)
             {
-                cameraRoot.position = player.transform.position;
+                cameraRoot.position = target.position;
             }
             else
             {
-                cameraRoot.position = Vector3.Lerp(cameraRoot.position, player.transform.position, 2f * Time.deltaTime);
+                cameraRoot.position = Vector3.Lerp(cameraRoot.position, target.position, 2f * Time.deltaTime);
             }
         }
     }
@@ -115,5 +124,21 @@ public class ClientManager : MonoBehaviour
         }
 
         mainCamera.transform.localPosition = new Vector3(0, 0, mainCamera.transform.localPosition.z);
+    }
+
+    public void HandleAstralProject()
+    {
+        astralProjecting = !astralProjecting;
+        if (astralProjecting)
+        {
+            player.GetComponent<PlayerInput>().enabled = false;
+            soul = Instantiate(loadedPrefabs.Soul, player.transform.position, Quaternion.identity).GetComponent<PlayerSoul>();
+        }
+        else
+        {
+            soul.GetComponent<PlayerInput>().enabled = false;
+            Destroy(soul.gameObject);
+            player.GetComponent<PlayerInput>().enabled = true;
+        }
     }
 }

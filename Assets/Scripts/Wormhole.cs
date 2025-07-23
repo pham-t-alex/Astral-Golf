@@ -8,7 +8,7 @@ public class Wormhole : CelestialObject
     private void OnDrawGizmos()
     {
         Gizmos.color = GetComponent<SpriteRenderer>().color;
-        Gizmos.DrawSphere(transform.position, 0.5f * scale);
+        Gizmos.DrawSphere(transform.position, 0.4f * scale);
         if (destinationWormhole == null) return;
         Gizmos.DrawLine(transform.position, destinationWormhole.transform.position);
     }
@@ -34,5 +34,6 @@ public class Wormhole : CelestialObject
     protected override void StartServerSetup()
     {
         InitializeCelestialObject(scale);
+        if (!IsClient) Destroy(GetComponent<SpriteRenderer>());
     }
 }

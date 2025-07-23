@@ -20,3 +20,4 @@ MonoBehaviour:
   neutronStarProjection: {fileID: 3913231202545146484, guid: 525556876d3359e44891577e982d6bdd, type: 3}
   blackHoleProjection: {fileID: 3146572066293527565, guid: 0904ba6c96d5f424298a93019ff10d0e, type: 3}
   starOrbitLine: {fileID: 4743764888235626783, guid: 15b5e3b3638e1014e8c3f11381d87dae, type: 3}
+  soul: {fileID: 4294775775249080091, guid: c0f61c90da0fe494cb353397189325a2, type: 3}

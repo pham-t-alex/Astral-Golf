@@ -48,6 +48,14 @@ public class Manager : MonoBehaviour
     [SerializeField] private Transform playerSpawn;
     [SerializeField] private float playerSpawnRadius = 3f;
 
+    [Tooltip("Time between hot red giant and nova")]
+    [SerializeField] private float hotGiantTransitionGap = 5f;
+    public float HotGiantTransitionGap => hotGiantTransitionGap;
+
+    [Tooltip("Hot red giant transition time")]
+    [SerializeField] private float hotTransitionTime = 3f;
+    public float HotTransitionTime => hotTransitionTime;
+
     private float gameTime = 0f;
     public float GameTime => gameTime;
     public event Action<float> GameTimeUpdate;

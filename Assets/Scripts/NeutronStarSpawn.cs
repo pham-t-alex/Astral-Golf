@@ -10,7 +10,7 @@ public class NeutronStarSpawn : OrbitingObjectSpawn
     {
         Gizmos.color = objColor;
         Gizmos.DrawSphere(position, 3.7f * scale);
-        Gizmos.DrawWireSphere(position, 0.5f * pullScale);
+        Gizmos.DrawWireSphere(position, 10 * pullScale);
     }
 
     public override void SpawnObject()

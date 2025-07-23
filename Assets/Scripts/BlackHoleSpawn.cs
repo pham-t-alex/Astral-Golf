@@ -9,8 +9,8 @@ public class BlackHoleSpawn : OrbitingObjectSpawn
     protected override void DrawObject(Vector2 position)
     {
         Gizmos.color = objColor;
-        Gizmos.DrawSphere(position, 0.5f * scale);
-        Gizmos.DrawWireSphere(position, 0.5f * pullScale);
+        Gizmos.DrawSphere(position, 5.4f * scale);
+        Gizmos.DrawWireSphere(position, 25 * pullScale);
     }
 
     public override void SpawnObject()

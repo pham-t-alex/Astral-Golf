@@ -42,7 +42,7 @@ public abstract class OrbitingObject : CelestialObject
     [Rpc(SendTo.ClientsAndHost)]
     public void SetupOrbitClientRpc(Vector2 center, float semiMajor, float semiMinor, float rotation, RpcParams rpcParams)
     {
-        Color color = new Color(1, 1, 1, 0.5f);
+        Color color = new Color(1, 1, 1, 0.2f);
 
         SetupOrbit(center, semiMajor, semiMinor, rotation, color);
 

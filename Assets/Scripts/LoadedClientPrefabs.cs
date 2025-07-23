@@ -34,4 +34,8 @@ public class LoadedClientPrefabs : ScriptableObject
     [Tooltip("Star orbit line prefab")]
     [SerializeField] private GameObject starOrbitLine;
     public GameObject StarOrbitLine => starOrbitLine;
+
+    [Tooltip("Player soul prefab")]
+    [SerializeField] private GameObject soul;
+    public GameObject Soul => soul;
 }

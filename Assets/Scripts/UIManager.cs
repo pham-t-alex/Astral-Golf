@@ -66,4 +66,9 @@ public class UIManager : MonoBehaviour
             turnIndicator.SetActive(false);
         }
     }
+
+    public void AstralProject()
+    {
+        ClientManager.Instance.HandleAstralProject();
+    }
 }
