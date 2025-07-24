@@ -15,9 +15,13 @@ public class WhiteDwarf : OrbitingObject
     {
         this.baseAge = baseAge;
         this.age = age;
-        this.nebulaScale = nebulaScale;
-        nebula.transform.localScale = new Vector3(nebulaScale / transform.localScale.x, nebulaScale / transform.localScale.y, 1f);
-        nebula.InitializeNebula(nebulaAccel);
+        if (nebula != null)
+        {
+            this.nebulaScale = nebulaScale;
+            nebula.transform.localScale = new Vector3(nebulaScale / transform.localScale.x, nebulaScale / transform.localScale.y, 1f);
+            nebula.InitializeNebula(nebulaAccel);
+        }
+        
 
         Manager.Instance.GameTimeUpdate += UpdateWhiteDwarfAge;
     }
@@ -25,7 +29,10 @@ public class WhiteDwarf : OrbitingObject
     protected override void StartServerSetup()
     {
         base.StartServerSetup();
-        InitializeNebulaClientRpc(nebulaScale, default);
+        if (nebula != null)
+        {
+            InitializeNebulaClientRpc(nebulaScale, default);
+        }
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -48,7 +55,10 @@ public class WhiteDwarf : OrbitingObject
     {
         base.OnDestroy();
         if (!IsServer) return;
-        Destroy(nebula.gameObject);
+        if (nebula != null)
+        {
+            Destroy(nebula.gameObject);
+        }
     }
 
     public void UpdateWhiteDwarfAge(float time)
@@ -70,5 +80,14 @@ public class WhiteDwarf : OrbitingObject
             Destroy(gameObject);
             return;
         }
+    }
+
+    public override string GetDescription()
+    {
+        if (nebula != null)
+        {
+            return "White Dwarf (Powerup)\nNebula (Movement\nModification)";
+        }
+        return "White Dwarf (Powerup)";
     }
 }

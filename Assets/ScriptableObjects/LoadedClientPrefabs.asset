@@ -15,9 +15,8 @@ MonoBehaviour:
   shootLine: {fileID: 1724236029379870659, guid: a9f4eee7bc40caa4f983acd32f904c7e, type: 3}
   supernovaEffect: {fileID: 2579404652629351393, guid: c81cc3be4f280694da1a1396b2663a93, type: 3}
   supernovaShockwave: {fileID: 6133834199758622721, guid: d8a453586d1f3164baa56eeb00f287b0, type: 3}
-  redGiantProjection: {fileID: 2856746963193980942, guid: 9a208e95db1899b46a6d898cdf2e2280, type: 3}
-  whiteDwarfProjection: {fileID: 4896453336974669272, guid: dcde4e7c78b7a3f46b6d209918b03d2e, type: 3}
-  neutronStarProjection: {fileID: 3913231202545146484, guid: 525556876d3359e44891577e982d6bdd, type: 3}
-  blackHoleProjection: {fileID: 3146572066293527565, guid: 0904ba6c96d5f424298a93019ff10d0e, type: 3}
+  supernovaProjection: {fileID: 3146572066293527565, guid: 0904ba6c96d5f424298a93019ff10d0e, type: 3}
   starOrbitLine: {fileID: 4743764888235626783, guid: 15b5e3b3638e1014e8c3f11381d87dae, type: 3}
   soul: {fileID: 4294775775249080091, guid: c0f61c90da0fe494cb353397189325a2, type: 3}
+  followText: {fileID: 5526652982194753449, guid: e7f38fe2bed81404aa7ca1d328b0be0d, type: 3}
+  warning: {fileID: 3459804831727882190, guid: 5df58d5d729641c45a8a2902c06e91a2, type: 3}

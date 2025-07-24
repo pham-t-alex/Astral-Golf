@@ -36,4 +36,9 @@ public class Wormhole : CelestialObject
         InitializeCelestialObject(scale);
         if (!IsClient) Destroy(GetComponent<SpriteRenderer>());
     }
+
+    public override string GetDescription()
+    {
+        return "Wormhole (Teleport)";
+    }
 }

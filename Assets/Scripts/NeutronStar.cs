@@ -79,4 +79,9 @@ public class NeutronStar : OrbitingObject
             return;
         }
     }
+
+    public override string GetDescription()
+    {
+        return "Neutron Star\n(Gravitational Pull)";
+    }
 }

@@ -15,6 +15,7 @@ MonoBehaviour:
   playerBall: {fileID: 2066495569979704058, guid: e0b5bee3c72f1234fa0991b8aba40ade, type: 3}
   star: {fileID: 2806718780446702024, guid: db24da2176ca5be4b90f216580e7270d, type: 3}
   redGiantStar: {fileID: 2806718780446702024, guid: a75eda4834be82a409a4f1e504ccb5be, type: 3}
-  whiteDwarf: {fileID: 2806718780446702024, guid: e3903fc1929fc2a4a9209f2e5fc248d3, type: 3}
+  whiteDwarf: {fileID: 2806718780446702024, guid: c56335ab8d8a6c449b79ced23c178ab8, type: 3}
+  whiteDwarfWithNebula: {fileID: 2806718780446702024, guid: e3903fc1929fc2a4a9209f2e5fc248d3, type: 3}
   neutronStar: {fileID: 2806718780446702024, guid: 78e69442858a4d84392c96e5d1662fcb, type: 3}
   blackHole: {fileID: 2806718780446702024, guid: 1f7dbde9bbca75244beace19a4e74224, type: 3}
