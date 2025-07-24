@@ -20,6 +20,7 @@ public abstract class OrbitingObjectSpawn : CelestialObjectSpawn
     // Draw Gizmos to visualize orbit and star
     void OnDrawGizmos()
     {
+        if (Application.isPlaying) return;
         // Draw orbit ellipse
         Gizmos.color = Color.white;
         int segments = 100;
