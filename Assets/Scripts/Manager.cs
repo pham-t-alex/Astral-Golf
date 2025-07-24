@@ -73,6 +73,8 @@ public class Manager : MonoBehaviour
     private float maxNaturalTime = 0f;
     private int playerTurn = 0;
 
+    private Powerup selectedPowerup = new global::TimeDistortion("Time Distortion", 30);
+
     public enum TimeDistortionType
     {
         Time,
@@ -246,7 +248,11 @@ public class Manager : MonoBehaviour
     public void StartTimeDistortion(ulong clientId, TimeDistortion distortion)
     {
         if (!NetworkManager.Singleton.IsServer) return;
-        playerTimeDistortions[clientId] = distortion;
+        if (distortion.type == TimeDistortionType.Time && selectedPowerup.PowerupName == "Time Distortion" ||
+            distortion.type == TimeDistortionType.Orbit && selectedPowerup.PowerupName == "Orbit Shift")
+        {
+            playerTimeDistortions[clientId] = distortion;
+        }
     }
 
     public void EndTimeDistortion(ulong clientId)

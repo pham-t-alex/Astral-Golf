@@ -19,6 +19,10 @@ public class LoadedPrefabs : ScriptableObject
     [SerializeField] private GameObject whiteDwarf;
     public GameObject WhiteDwarf => whiteDwarf;
 
+    [Tooltip("White dwarf with nebula prefab")]
+    [SerializeField] private GameObject whiteDwarfWithNebula;
+    public GameObject WhiteDwarfWithNebula => whiteDwarfWithNebula;
+
     [Tooltip("Neutron Star prefab")]
     [SerializeField] private GameObject neutronStar;
     public GameObject NeutronStar => neutronStar;

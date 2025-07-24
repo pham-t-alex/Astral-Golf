@@ -15,21 +15,9 @@ public class LoadedClientPrefabs : ScriptableObject
     [SerializeField] private GameObject supernovaShockwave;
     public GameObject SupernovaShockwave => supernovaShockwave;
 
-    [Tooltip("Red giant projection")]
-    [SerializeField] private GameObject redGiantProjection;
-    public GameObject RedGiantProjection => redGiantProjection;
-
-    [Tooltip("White dwarf projection")]
-    [SerializeField] private GameObject whiteDwarfProjection;
-    public GameObject WhiteDwarfProjection => whiteDwarfProjection;
-
-    [Tooltip("Neutron Star projection")]
-    [SerializeField] private GameObject neutronStarProjection;
-    public GameObject NeutronStarProjection => neutronStarProjection;
-
-    [Tooltip("Black Hole projection")]
-    [SerializeField] private GameObject blackHoleProjection;
-    public GameObject BlackHoleProjection => blackHoleProjection;
+    [Tooltip("Supernova projection")]
+    [SerializeField] private GameObject supernovaProjection;
+    public GameObject SupernovaProjection => supernovaProjection;
 
     [Tooltip("Star orbit line prefab")]
     [SerializeField] private GameObject starOrbitLine;
@@ -38,4 +26,12 @@ public class LoadedClientPrefabs : ScriptableObject
     [Tooltip("Player soul prefab")]
     [SerializeField] private GameObject soul;
     public GameObject Soul => soul;
+
+    [Tooltip("Follow text")]
+    [SerializeField] private GameObject followText;
+    public GameObject FollowText => followText;
+
+    [Tooltip("Warning")]
+    [SerializeField] private GameObject warning;
+    public GameObject Warning => warning;
 }

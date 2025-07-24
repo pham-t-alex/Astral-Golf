@@ -29,6 +29,7 @@ public class Star : OrbitingObject
     private NetworkVariable<float> hotTransition = new NetworkVariable<float>(0);
 
     private GameObject projection;
+    private GameObject warning;
     private struct ProjectionData : INetworkSerializable
     {
         public Vector2 position;
@@ -66,7 +67,7 @@ public class Star : OrbitingObject
         {
             GetComponent<SpriteRenderer>().sprite = ClientManager.Instance.LoadedSprites.BlueStar;
         }
-        //HandleProjectionDataChange(default, projectionData.Value);
+        HandleProjectionDataChange(default, projectionData.Value);
         projectionData.OnValueChanged += HandleProjectionDataChange;
         hotTransition.OnValueChanged += HandleHotTransition;
     }
@@ -84,29 +85,14 @@ public class Star : OrbitingObject
 
         if (newData.active && projection == null)
         {
-            if (type.Value == StarType.MainSequence)
-            {
-                projection = Instantiate(ClientManager.Instance.LoadedPrefabs.RedGiantProjection, newData.position, Quaternion.identity);
-            }
-            else
-            {
-                switch (fate.Value)
-                {
-                    case StarFate.Nebula:
-                        projection = Instantiate(ClientManager.Instance.LoadedPrefabs.WhiteDwarfProjection, newData.position, Quaternion.identity);
-                        break;
-                    case StarFate.NeutronStar:
-                        projection = Instantiate(ClientManager.Instance.LoadedPrefabs.NeutronStarProjection, newData.position, Quaternion.identity);
-                        break;
-                    case StarFate.BlackHole:
-                        projection = Instantiate(ClientManager.Instance.LoadedPrefabs.BlackHoleProjection, newData.position, Quaternion.identity);
-                        break;
-                }
-            }
+            projection = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaProjection, newData.position, Quaternion.identity);
             projection.transform.position = newData.position;
+            warning = Instantiate(ClientManager.Instance.LoadedPrefabs.Warning);
+            warning.GetComponent<InfoFollow>().SetTarget(projection.transform);
         }
         else if (!newData.active && projection != null)
         {
+            Destroy(warning);
             Destroy(projection);
         }
     }
@@ -189,7 +175,7 @@ public class Star : OrbitingObject
         newBaseAge = newAge - time;
         if (fate.Value == StarFate.Nebula)
         {
-            GameObject whiteDwarf = Instantiate(Manager.Instance.LoadedPrefabs.WhiteDwarf, transform.position, Quaternion.identity);
+            GameObject whiteDwarf = Instantiate(Manager.Instance.LoadedPrefabs.WhiteDwarfWithNebula, transform.position, Quaternion.identity);
             WhiteDwarf whiteDwarfComp = whiteDwarf.GetComponent<WhiteDwarf>();
             whiteDwarfComp.InitializeCelestialObject(scale);
             whiteDwarfComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
@@ -260,17 +246,8 @@ public class Star : OrbitingObject
 
     void EvolutionProjection()
     {
-        if (type.Value == StarType.MainSequence)
+        if (type.Value == StarType.MainSequence || fate.Value == StarFate.Nebula)
         {
-            if (age >= Manager.Instance.StarMaxAge - Manager.Instance.ProjectionTime)
-            {
-                Vector2 projectionPosition = EllipsePosition(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, Mathf.Deg2Rad * (startingAngle + (Manager.Instance.OrbitTime + Manager.Instance.StarMaxAge - age) * angularVelocity));
-                projectionData.Value = new ProjectionData(projectionPosition, true);
-            }
-            else if (age < Manager.Instance.StarMaxAge - Manager.Instance.ProjectionTime)
-            {
-                projectionData.Value = new ProjectionData(Vector2.zero, false);
-            }
             return;
         }
         // red giant
@@ -291,7 +268,17 @@ public class Star : OrbitingObject
         if (!IsClient) return;
         if (projection != null)
         {
+            Destroy(warning);
             Destroy(projection);
         }
+    }
+
+    public override string GetDescription()
+    {
+        if (type.Value == StarType.RedGiant)
+        {
+            return "Red Giant (Unstable)";
+        }
+        return "Star (Normal)";
     }
 }

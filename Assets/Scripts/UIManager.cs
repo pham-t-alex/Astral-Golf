@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +13,18 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Image[] powerupImages;
     private List<string> powerups = new List<string>();
 
+    [SerializeField] private GameObject worldInfoTexts;
+    [SerializeField] private GameObject uiInfoTexts;
+    private bool infoTextsActive = false;
+
+    [SerializeField] private GameObject astralMode;
+    [SerializeField] private GameObject batteryText;
+    [SerializeField] private GameObject orbitModel;
+    [SerializeField] private GameObject timeModel;
+    [SerializeField] private GameObject distortionButtons;
+    [SerializeField] private GameObject orbitShiftInfo;
+    [SerializeField] private GameObject timeDistortionInfo;
+
     private void Awake()
     {
         if (!NetworkManager.Singleton.IsClient)
@@ -24,28 +36,44 @@ public class UIManager : MonoBehaviour
     }
 
     private bool timeDistortionButtonPressed = false;
-    public void HandleTimeForward(bool accelerated)
+    private string selectedPowerup = "Time Distortion";
+
+    public void HandleForward(bool accelerated)
     {
+        Manager.TimeDistortionType type;
+        if (selectedPowerup == "Time Distortion")
+        {
+            type = Manager.TimeDistortionType.Time;
+        }
+        else if (selectedPowerup == "Orbit Shift")
+        {
+            type = Manager.TimeDistortionType.Orbit;
+        }
+        else
+        {
+            return;
+        }
         timeDistortionButtonPressed = true;
-        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Time, accelerated, true));
+        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(type, accelerated, true));
     }
 
-    public void HandleTimeBackward(bool accelerated)
+    public void HandleBackward(bool accelerated)
     {
+        Manager.TimeDistortionType type;
+        if (selectedPowerup == "Time Distortion")
+        {
+            type = Manager.TimeDistortionType.Time;
+        }
+        else if (selectedPowerup == "Orbit Shift")
+        {
+            type = Manager.TimeDistortionType.Orbit;
+        }
+        else
+        {
+            return;
+        }
         timeDistortionButtonPressed = true;
-        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Time, accelerated, false));
-    }
-
-    public void HandleOrbitForward(bool accelerated)
-    {
-        timeDistortionButtonPressed = true;
-        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Orbit, accelerated, true));
-    }
-
-    public void HandleOrbitBackward(bool accelerated)
-    {
-        timeDistortionButtonPressed = true;
-        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(Manager.TimeDistortionType.Orbit, accelerated, false));
+        Messenger.Instance.StartTimeDistortion(new Manager.TimeDistortion(type, accelerated, false));
     }
 
     public void HandleDistortionReleased()
@@ -76,6 +104,14 @@ public class UIManager : MonoBehaviour
     public void AstralProject()
     {
         ClientManager.Instance.HandleAstralProject();
+        if (ClientManager.Instance.AstralProjecting)
+        {
+            astralMode.SetActive(true);
+        }
+        else
+        {
+            astralMode.SetActive(false);
+        }
     }
 
     public void PickupPowerup(string name)
@@ -117,5 +153,26 @@ public class UIManager : MonoBehaviour
     public void SelectPowerup(int index)
     {
         // implement
+    }
+
+    public void InitializeWorldInfoText(GameObject text)
+    {
+        text.transform.SetParent(worldInfoTexts.transform);
+    }
+
+    public void ToggleInfoTexts()
+    {
+        infoTextsActive = !infoTextsActive;
+        worldInfoTexts.SetActive(infoTextsActive);
+        uiInfoTexts.SetActive(infoTextsActive);
+
+        if (selectedPowerup == "Time Distortion")
+        {
+            timeDistortionInfo.SetActive(infoTextsActive);
+        }
+        else if (selectedPowerup == "Orbit Shift")
+        {
+            orbitShiftInfo.SetActive(infoTextsActive);
+        }
     }
 }

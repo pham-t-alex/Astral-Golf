@@ -86,4 +86,9 @@ public class BlackHole : OrbitingObject
             return;
         }
     }
+
+    public override string GetDescription()
+    {
+        return "Black Hole (Danger;\nGravitational Pull)";
+    }
 }

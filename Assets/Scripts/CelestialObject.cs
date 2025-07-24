@@ -5,6 +5,8 @@ public abstract class CelestialObject : NetworkBehaviour
 {
     [Header("Celestial Object Settings")]
     [SerializeField] protected float scale;
+    private TextFollow infoText;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -47,7 +49,20 @@ public abstract class CelestialObject : NetworkBehaviour
     protected virtual void StartClientSetup()
     {
         if (!IsServer) Destroy(GetComponent<Collider2D>());
+        infoText = Instantiate(ClientManager.Instance.LoadedPrefabs.FollowText).GetComponent<TextFollow>();
+        infoText.SetTarget(transform);
+        infoText.SetText(GetDescription());
     }
     protected virtual void ServerFixedTick(float fixedDeltaTime) { }
-    public override void OnDestroy() { }
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        if (!IsClient) return;
+        Destroy(infoText.gameObject);
+    }
+
+    public virtual string GetDescription()
+    {
+        return "";
+    }
 }
