@@ -111,7 +111,7 @@ public class LobbyUI : MonoBehaviour
     public void StartGame()
     {
         ISession session = SessionManager.Instance.ActiveSession;
-        if (session != null && session.IsHost && session.PlayerCount > 1 && NetworkManager.Singleton.ConnectedClientsIds.Count > 1)
+        if (session != null && session.IsHost)
         {
             NetworkManager.Singleton.SceneManager.LoadScene("Space", LoadSceneMode.Single);
         }
