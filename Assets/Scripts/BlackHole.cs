@@ -51,7 +51,7 @@ public class BlackHole : OrbitingObject
     {
         if (!IsServer) return;
         if (collision.gameObject.layer != LayerMask.NameToLayer("Player")) return;
-        Destroy(collision.gameObject);
+        collision.GetComponent<PlayerBall>().FallInBlackHole();
     }
 
     protected override void ServerFixedTick(float fixedDeltaTime)

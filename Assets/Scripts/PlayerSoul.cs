@@ -12,12 +12,17 @@ public class PlayerSoul : MonoBehaviour
     private bool movingByMouse = false;
     private Vector2 targetPosition;
 
+    private TextFollow infoText;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         PlayerInput playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
         mousePosition = playerInput.actions["MousePosition"];
+        infoText = Instantiate(ClientManager.Instance.LoadedPrefabs.FollowText).GetComponent<TextFollow>();
+        infoText.SetTarget(transform);
+        infoText.SetText("Player Soul\n(WASD/click to move)");
     }
 
     // Update is called once per frame
@@ -60,5 +65,10 @@ public class PlayerSoul : MonoBehaviour
         {
             mouseHeldDown = false;
         }
+    }
+
+    private void OnDestroy()
+    {
+        Destroy(infoText.gameObject);
     }
 }

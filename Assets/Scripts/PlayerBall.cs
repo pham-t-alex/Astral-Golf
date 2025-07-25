@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -41,8 +42,9 @@ public class PlayerBall : NetworkBehaviour
     private Wormhole exitWormhole;
     public Wormhole ExitWormhole => exitWormhole;
 
-    // Server side
-    private List<Powerup> powerups = new List<Powerup>();
+    private Vector2 prevPosition;
+
+    private TextFollow infoText;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -55,17 +57,28 @@ public class PlayerBall : NetworkBehaviour
         base.OnNetworkSpawn();
         if (IsServer)
         {
+            prevPosition = transform.position;
             rb = GetComponent<Rigidbody2D>();
         }
         else
         {
             Destroy(GetComponent<Rigidbody2D>());
         }
-        if (IsClient && IsOwner)
+        if (IsClient)
         {
-            playerInput = GetComponent<PlayerInput>();
-            mousePosition = playerInput.actions["MousePosition"];
-            ClientManager.Instance.SetPlayer(this);
+            infoText = Instantiate(ClientManager.Instance.LoadedPrefabs.FollowText).GetComponent<TextFollow>();
+            infoText.SetTarget(transform);
+            if (IsOwner)
+            {
+                playerInput = GetComponent<PlayerInput>();
+                mousePosition = playerInput.actions["MousePosition"];
+                ClientManager.Instance.SetPlayer(this);
+                infoText.SetText("Your Ball\n(Drag to Launch)");
+            }
+            else
+            {
+                infoText.SetText("Player Ball (Opponent)");
+            }
         }
         else
         {
@@ -107,6 +120,7 @@ public class PlayerBall : NetworkBehaviour
         {
             Manager.Instance.RemovePlayer(OwnerClientId);
         }
+        if (IsClient && infoText != null) Destroy(infoText.gameObject);
     }
 
     public void HandleLMouse(InputAction.CallbackContext ctx)
@@ -147,6 +161,7 @@ public class PlayerBall : NetworkBehaviour
     public void LaunchRpc(Vector2 direction, RpcParams rpcParams)
     {
         completedTurn = true;
+        prevPosition = transform.position;
         rb.AddForce(direction * launchForce, ForceMode2D.Impulse);
     }
 
@@ -159,11 +174,7 @@ public class PlayerBall : NetworkBehaviour
     public void PickupPowerup(Powerup powerup)
     {
         if (!IsServer) return;
-        if (powerups.Count == 3)
-        {
-            powerups.RemoveAt(0);
-        }
-        powerups.Add(powerup);
+        Manager.Instance.PickupPowerup(OwnerClientId, powerup);
         PickupPowerupRpc(powerup.PowerupName, default);
     }
 
@@ -171,5 +182,19 @@ public class PlayerBall : NetworkBehaviour
     public void PickupPowerupRpc(string name, RpcParams rpcParams)
     {
         UIManager.Instance.PickupPowerup(name);
+    }
+
+    public void FallInBlackHole()
+    {
+        if (!IsServer) return;
+        bool lifeConsumed = Manager.Instance.ConsumeExtraLifeIfPossible(OwnerClientId);
+        if (lifeConsumed)
+        {
+            transform.position = prevPosition;
+        }
+        else
+        {
+            transform.position = Manager.Instance.PlayerSpawn.position + (Quaternion.Euler(0, 0, Random.Range(0f, 360f)) * (Random.Range(0, Manager.Instance.PlayerSpawnRadius) * Vector2.right));
+        }
     }
 }

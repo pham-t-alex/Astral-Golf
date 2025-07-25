@@ -83,12 +83,16 @@ public class Star : OrbitingObject
     {
         if (!IsClient) return;
 
-        if (newData.active && projection == null)
+        if (newData.active)
         {
-            projection = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaProjection, newData.position, Quaternion.identity);
+            if (projection == null)
+            {
+                projection = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaProjection, newData.position, Quaternion.identity);
+                projection.transform.position = newData.position;
+                warning = Instantiate(ClientManager.Instance.LoadedPrefabs.Warning);
+                warning.GetComponent<InfoFollow>().SetTarget(projection.transform);
+            }
             projection.transform.position = newData.position;
-            warning = Instantiate(ClientManager.Instance.LoadedPrefabs.Warning);
-            warning.GetComponent<InfoFollow>().SetTarget(projection.transform);
         }
         else if (!newData.active && projection != null)
         {

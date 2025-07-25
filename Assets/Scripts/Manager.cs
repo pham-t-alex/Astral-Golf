@@ -1,7 +1,9 @@
-using UnityEngine;
 using System;
-using Unity.Netcode;
 using System.Collections.Generic;
+using Unity.Netcode;
+using UnityEditor.PackageManager;
+using UnityEngine;
+using static Manager;
 
 public class Manager : MonoBehaviour
 {
@@ -46,7 +48,9 @@ public class Manager : MonoBehaviour
 
     [Tooltip("Player spawn")]
     [SerializeField] private Transform playerSpawn;
+    public Transform PlayerSpawn => playerSpawn;
     [SerializeField] private float playerSpawnRadius = 3f;
+    public float PlayerSpawnRadius => playerSpawnRadius;
 
     [Tooltip("Time between hot red giant and nova")]
     [SerializeField] private float hotGiantTransitionGap = 5f;
@@ -73,7 +77,8 @@ public class Manager : MonoBehaviour
     private float maxNaturalTime = 0f;
     private int playerTurn = 0;
 
-    private Powerup selectedPowerup = new global::TimeDistortion("Time Distortion", 30);
+    private Dictionary<ulong, Powerup> selectedPowerups = new Dictionary<ulong, Powerup>();
+    private Dictionary<ulong, List<Powerup>> playerPowerups = new Dictionary<ulong, List<Powerup>>();
 
     public enum TimeDistortionType
     {
@@ -166,6 +171,9 @@ public class Manager : MonoBehaviour
         foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
         {
             playerIds.Add(clientId);
+            selectedPowerups[clientId] = null;
+            playerPowerups[clientId] = new List<Powerup>();
+
             GameObject player = Instantiate(loadedPrefabs.PlayerBall, playerSpawn.position + (Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 360f)) * (UnityEngine.Random.Range(0, playerSpawnRadius) * Vector2.right)), Quaternion.identity);
             playerBalls.Add(clientId, player.GetComponent<PlayerBall>());
             ServerSidePlayerSetup(player.GetComponent<PlayerBall>(), clientId);
@@ -211,12 +219,51 @@ public class Manager : MonoBehaviour
             //        OrbitTimeUpdate?.Invoke(gameTime + orbitTimeDisplacement);
             //    break;
             //}
+            UpdatePowerups(Time.deltaTime);
         }
         else
         {
             gameTime += Time.deltaTime;
             maxNaturalTime = Mathf.Max(maxNaturalTime, gameTime);
             GameTimeUpdate?.Invoke(gameTime);
+        }
+    }
+
+    void UpdatePowerups(float time)
+    {
+        List<ulong> distortionExpirationIds = new List<ulong>();
+        foreach (ulong clientId in playerTimeDistortions.Keys)
+        {
+            Powerup p = selectedPowerups[clientId];
+            float factor = playerTimeDistortions[clientId].accelerated ? acceleratedUnit : normalUnit;
+            if (p is global::TimeDistortion)
+            {
+                global::TimeDistortion distortion = (global::TimeDistortion)p;
+                factor *= timeFactor;
+                distortion.timeLeft = Mathf.Max(0, distortion.timeLeft - (factor * time));
+                UpdateBattery(clientId, distortion.timeLeft, distortion.maxTimeLeft);
+                if (distortion.timeLeft <= 0)
+                {
+                    RemovePowerup(clientId, playerPowerups[clientId].IndexOf(distortion));
+                    distortionExpirationIds.Add(clientId);
+                }
+            }
+            else
+            {
+                OrbitShift distortion = (OrbitShift)p;
+                factor *= orbitFactor;
+                distortion.timeLeft = Mathf.Max(0, distortion.timeLeft - (factor * time));
+                UpdateBattery(clientId, distortion.timeLeft, distortion.maxTimeLeft);
+                if (distortion.timeLeft <= 0)
+                {
+                    RemovePowerup(clientId, playerPowerups[clientId].IndexOf(distortion));
+                    distortionExpirationIds.Add(clientId);
+                }
+            }
+        }
+        foreach (ulong clientId in distortionExpirationIds)
+        {
+            EndTimeDistortion(clientId);
         }
     }
 
@@ -249,8 +296,8 @@ public class Manager : MonoBehaviour
     public void StartTimeDistortion(ulong clientId, TimeDistortion distortion)
     {
         if (!NetworkManager.Singleton.IsServer) return;
-        if (distortion.type == TimeDistortionType.Time && selectedPowerup.PowerupName == "Time Distortion" ||
-            distortion.type == TimeDistortionType.Orbit && selectedPowerup.PowerupName == "Orbit Shift")
+        if (distortion.type == TimeDistortionType.Time && selectedPowerups[clientId].PowerupName == "Time Distortion" ||
+            distortion.type == TimeDistortionType.Orbit && selectedPowerups[clientId].PowerupName == "Orbit Shift")
         {
             playerTimeDistortions[clientId] = distortion;
         }
@@ -259,7 +306,7 @@ public class Manager : MonoBehaviour
     public void EndTimeDistortion(ulong clientId)
     {
         if (!NetworkManager.Singleton.IsServer) return;
-        playerTimeDistortions.Remove(clientId);
+        if (playerTimeDistortions.ContainsKey(clientId)) playerTimeDistortions.Remove(clientId);
     }
 
     private void OnDrawGizmos()
@@ -281,7 +328,7 @@ public class Manager : MonoBehaviour
 
         }
         playerIds.Remove(clientId);
-        
+
         // remove the player body if they were destroyed from destruction (not disconnect)
         bool playerStillConnected = false;
         foreach (ulong id in NetworkManager.Singleton.ConnectedClientsIds)
@@ -311,5 +358,72 @@ public class Manager : MonoBehaviour
         {
             Messenger.Instance.EndGame(id, victoriousPlayers.IndexOf(id) + 1);
         }
+    }
+
+    public void PickupPowerup(ulong clientId, Powerup powerup)
+    {
+        List<Powerup> playerPowerupList = playerPowerups[clientId];
+        if (playerPowerupList.Count == 3)
+        {
+            playerPowerupList.RemoveAt(0);
+        }
+        playerPowerupList.Add(powerup);
+    }
+
+    public void SelectPowerup(ulong clientId, int index)
+    {
+        List<Powerup> playerPowerupList = playerPowerups[clientId];
+        Debug.Log(playerPowerupList.Count);
+        if (index < playerPowerupList.Count)
+        {
+            selectedPowerups[clientId] = playerPowerupList[index];
+            Powerup powerup = selectedPowerups[clientId];
+            Messenger.Instance.UpdateSelectedPowerup(clientId, powerup.PowerupName);
+            if (powerup is global::TimeDistortion)
+            {
+                global::TimeDistortion timeDistortion = (global::TimeDistortion)powerup;
+                UpdateBattery(clientId, timeDistortion.timeLeft, timeDistortion.maxTimeLeft);
+            }
+            else if (powerup is OrbitShift)
+            {
+                OrbitShift orbitShift = (OrbitShift)powerup;
+                UpdateBattery(clientId, orbitShift.timeLeft, orbitShift.maxTimeLeft);
+            }
+        }
+    }
+
+    void UpdateBattery(ulong clientId, float time, float maxTime)
+    {
+        Messenger.Instance.UpdateBattery(clientId, Mathf.RoundToInt(time * 100 / maxTime));
+    }
+
+    public bool ConsumeExtraLifeIfPossible(ulong clientId)
+    {
+        List<Powerup> playerPowerupList = playerPowerups[clientId];
+        int index = -1;
+        for (int i = 0; i < playerPowerupList.Count; i++)
+        {
+            if (playerPowerupList[i] is ExtraLife)
+            {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) return false;
+        RemovePowerup(clientId, index);
+        return true;
+    }
+
+    void RemovePowerup(ulong clientId, int index)
+    {
+        List<Powerup> playerPowerupList = playerPowerups[clientId];
+        Powerup powerup = playerPowerupList[index];
+        playerPowerupList.RemoveAt(index);
+        if (selectedPowerups[clientId] == powerup)
+        {
+            selectedPowerups[clientId] = null;
+            Messenger.Instance.UpdateSelectedPowerup(clientId, null);
+        }
+        Messenger.Instance.RemovePowerup(clientId, index);
     }
 }

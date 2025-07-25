@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using static Manager;
 
 public class Messenger : NetworkBehaviour
 {
@@ -105,5 +105,49 @@ public class Messenger : NetworkBehaviour
     public void EndGameRpc(int rank, RpcParams rpcParams)
     {
         StartCoroutine(UIManager.Instance.GameEnd(rank));
+    }
+
+    public void SelectPowerup(int index)
+    {
+        SelectPowerupRpc(index, default);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void SelectPowerupRpc(int index, RpcParams rpcParams)
+    {
+        Manager.Instance.SelectPowerup(rpcParams.Receive.SenderClientId, index);
+    }
+
+    public void UpdateSelectedPowerup(ulong clientId, string powerupName)
+    {
+        UpdateSelectedPowerupRpc(powerupName, RpcTarget.Single(clientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void UpdateSelectedPowerupRpc(string powerupName, RpcParams rpcParams)
+    {
+        UIManager.Instance.UpdateSelectedPowerupUI(powerupName);
+    }
+
+    public void RemovePowerup(ulong clientId, int index)
+    {
+        RemovePowerupRpc(index, RpcTarget.Single(clientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void RemovePowerupRpc(int index, RpcParams rpcParams)
+    {
+        UIManager.Instance.RemovePowerup(index);
+    }
+
+    public void UpdateBattery(ulong clientId, int percentage)
+    {
+        UpdateBatteryRpc(percentage, RpcTarget.Single(clientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void UpdateBatteryRpc(int percentage, RpcParams rpcParams)
+    {
+        UIManager.Instance.UpdateBattery(percentage);
     }
 }

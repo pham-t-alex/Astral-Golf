@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Timers;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -86,7 +85,7 @@ public class ClientManager : MonoBehaviour
             }
         }
     }
-    
+
     public void SetPlayer(PlayerBall playerBall)
     {
         player = playerBall;
@@ -150,79 +149,29 @@ public class ClientManager : MonoBehaviour
         }
     }
 
-    // --- Powerup Selection Networking ---
-    // Called by UIManager to select a powerup slot
-    public void SendSelectPowerupRPC(int index)
-    {
-        SelectPowerupServerRpc(index);
-    }
+    //// ClientRpc to update powerup list when a powerup is consumed/expired
+    //[ClientRpc]
+    //private void RemovePowerupClientRpc(int index, ClientRpcParams clientRpcParams = default)
+    //{
+    //    // Remove powerup at index and update UI
+    //    if (index >= 0 && index < UIManager.Instance.Powerups.Count)
+    //    {
+    //        UIManager.Instance.Powerups.RemoveAt(index);
+    //        UIManager.Instance.PickupPowerup(null); // Force UI update
+    //    }
+    //    // Optionally, deselect if the removed powerup was selected
+    //    if (UIManager.Instance.SelectedPowerupIndex == index)
+    //    {
+    //        UIManager.Instance.OnServerDeselectedPowerup();
+    //    }
+    //}
 
-    // Called by UIManager to use time distortion
-    public void SendTimeDistortionRPC(bool accelerated)
+    public void RemovePlayerBody(Vector2 position)
     {
-        TimeDistortionServerRpc(accelerated);
-    }
-
-    // Called by UIManager to deselect powerup
-    public void SendDeselectPowerupRPC()
-    {
-        DeselectPowerupServerRpc();
-    }
-
-    // ServerRpc: receives selection from client, updates server state, then notifies client
-    [ServerRpc]
-    private void SelectPowerupServerRpc(int index, ServerRpcParams rpcParams = default)
-    {
-        ulong clientId = rpcParams.Receive.SenderClientId;
-        // Validate index (for demo, assume valid if >=0)
-        playerSelectedPowerup[clientId] = index;
-        SelectedPowerupClientRpc(index, new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } } });
-    }
-
-    [ServerRpc]
-    private void DeselectPowerupServerRpc(ServerRpcParams rpcParams = default)
-    {
-        ulong clientId = rpcParams.Receive.SenderClientId;
-        playerSelectedPowerup.Remove(clientId);
-        DeselectedPowerupClientRpc(new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } } });
-    }
-    // ServerRpc for time distortion
-    [ServerRpc]
-    private void TimeDistortionServerRpc(bool accelerated, ServerRpcParams rpcParams = default)
-    {
-        ulong clientId = rpcParams.Receive.SenderClientId;
-        int selectedIndex = playerSelectedPowerup.ContainsKey(clientId) ? playerSelectedPowerup[clientId] : -1;
-        // TODO: Apply time distortion logic based on selectedIndex and accelerated
-        // For now, just echo back to client (could trigger effects, etc.)
-        // You can add a ClientRpc here to notify the client of the result
-    }
-    // ClientRpc to update powerup list when a powerup is consumed/expired
-    [ClientRpc]
-    private void RemovePowerupClientRpc(int index, ClientRpcParams clientRpcParams = default)
-    {
-        // Remove powerup at index and update UI
-        if (index >= 0 && index < UIManager.Instance.Powerups.Count)
-        {
-            UIManager.Instance.Powerups.RemoveAt(index);
-            UIManager.Instance.PickupPowerup(null); // Force UI update
-        }
-        // Optionally, deselect if the removed powerup was selected
-        if (UIManager.Instance.SelectedPowerupIndex == index)
-        {
-            UIManager.Instance.OnServerDeselectedPowerup();
-        }
-    }
-
-    // ClientRpc: called by server to update UI on client
-    [ClientRpc]
-    private void SelectedPowerupClientRpc(int index, ClientRpcParams clientRpcParams = default)
-    {
-        UIManager.Instance.OnServerSelectedPowerup(index);
-    }
-
-    [ClientRpc]
-    private void DeselectedPowerupClientRpc(ClientRpcParams clientRpcParams = default)
-    {
-        UIManager.Instance.OnServerDeselectedPowerup();
+        UIManager.Instance.RemovePlayerBody();
+        if (astralProjecting) return;
+        astralProjecting = true;
+        player = null;
+        soul = Instantiate(loadedPrefabs.Soul, position, Quaternion.identity).GetComponent<PlayerSoul>();
     }
 }

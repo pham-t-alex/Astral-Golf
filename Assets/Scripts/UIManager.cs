@@ -79,12 +79,7 @@ public class UIManager : MonoBehaviour
     }
 
     private bool timeDistortionButtonPressed = false;
-    private string selectedPowerup = "Time Distortion";
-    public int SelectedPowerupIndex {
-        get {
-            return powerups.IndexOf(selectedPowerup);
-        }
-    }
+    private string selectedPowerup = null;
 
     public void HandleForward(bool accelerated)
     {
@@ -179,7 +174,7 @@ public class UIManager : MonoBehaviour
             }
             else
             {
-                powerupImages[i].sprite = GetPowerupSpriteByName(name);
+                powerupImages[i].sprite = GetPowerupSpriteByName(powerups[i]);
                 powerupImages[i].enabled = true;
             }
         }
@@ -200,55 +195,57 @@ public class UIManager : MonoBehaviour
     // On click with index
     public void SelectPowerup(int index)
     {
-        if (index < 0 || index >= powerups.Count)
-            return;
+        if (index < 0 || index >= powerups.Count) return;
 
-        selectedPowerup = powerups[index];
         // Send RPC to server to select powerup for this player
-        ClientManager.Instance.SendSelectPowerupRPC(index);
-        // Optionally update UI immediately, or wait for server confirmation
-        UpdateSelectedPowerupUI();
-    }
-    // Called when server confirms selection or deselection
-    public void OnServerSelectedPowerup(int index)
-    {
-        if (index < 0 || index >= powerups.Count)
-        {
-            selectedPowerup = null;
-        }
-        else
-        {
-            selectedPowerup = powerups[index];
-        }
-        UpdateSelectedPowerupUI();
+        Messenger.Instance.SelectPowerup(index);
     }
 
-    public void OnServerDeselectedPowerup()
+    public void UpdateSelectedPowerupUI(string powerup)
     {
-        selectedPowerup = null;
-        UpdateSelectedPowerupUI();
-    }
-
-    private void UpdateSelectedPowerupUI()
-    {
+        selectedPowerup = powerup;
         // Highlight selected powerup in UI, show info, etc.
         // Example: update info panels
         if (selectedPowerup == "Time Distortion")
         {
-            timeDistortionInfo.SetActive(true);
-            orbitShiftInfo.SetActive(false);
+            timeModel.SetActive(true);
+            orbitModel.SetActive(false);
+            batteryText.SetActive(true);
+            distortionButtons.SetActive(true);
         }
         else if (selectedPowerup == "Orbit Shift")
         {
-            timeDistortionInfo.SetActive(false);
-            orbitShiftInfo.SetActive(true);
+            timeModel.SetActive(false);
+            orbitModel.SetActive(true);
+            batteryText.SetActive(true);
+            distortionButtons.SetActive(true);
         }
         else
         {
-            timeDistortionInfo.SetActive(false);
-            orbitShiftInfo.SetActive(false);
+            timeModel.SetActive(false);
+            orbitModel.SetActive(false);
+            batteryText.SetActive(false);
+            distortionButtons.SetActive(false);
         }
         // You can add more UI logic here (e.g., highlight selected slot)
+    }
+
+    public void RemovePowerup(int index)
+    {
+        powerups.RemoveAt(index);
+        for (int i = 0; i < powerupImages.Length; i++)
+        {
+            if (i > powerups.Count - 1)
+            {
+                powerupImages[i].sprite = null;
+                powerupImages[i].enabled = false;
+            }
+            else
+            {
+                powerupImages[i].sprite = GetPowerupSpriteByName(powerups[i]);
+                powerupImages[i].enabled = true;
+            }
+        }
     }
 
     public void InitializeWorldInfoText(GameObject text)
@@ -317,5 +314,10 @@ public class UIManager : MonoBehaviour
         yield return null; // let destruction complete
 
         SceneManager.LoadScene("Lobby");
+    }
+
+    public void UpdateBattery(int percentage)
+    {
+        batteryText.GetComponent<TMP_Text>().text = $"{percentage}%";
     }
 }
