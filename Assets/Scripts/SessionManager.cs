@@ -71,6 +71,7 @@ public class SessionManager : MonoBehaviour
         {
             await activeSession.LeaveAsync();
         }
+        Debug.Log(id);
         activeSession = await MultiplayerService.Instance.JoinSessionByIdAsync(id);
         Debug.Log($"Joined session {activeSession.Id}");
     }

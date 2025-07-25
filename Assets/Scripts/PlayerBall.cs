@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,6 +9,7 @@ public class PlayerBall : NetworkBehaviour
     {
         AudioManager.Instance.PlaySound(1, 3, transform.position);
     }
+
     [Header("Player Stats")]
     [Tooltip("The force multiplier applied to the ball when launched.")]
     [SerializeField] private float launchForce = 100f;

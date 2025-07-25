@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using Unity.Services.Lobbies;
-using Unity.Services.Lobbies.Models;
-using Unity.Services.Multiplayer;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -287,33 +285,7 @@ public class UIManager : MonoBehaviour
         }
         gameEndRankText.GetComponent<TMP_Text>().text = rank > 0 ? $"Rank: {rank}" : "Unranked";
         gameEndUI.SetActive(true);
-        if (!NetworkManager.Singleton.IsServer) {
-            NetworkManager.Singleton.OnClientDisconnectCallback += (id) =>
-            {
-                if (id == NetworkManager.ServerClientId) ReturnToLobby();
-            };
-        }
         yield return null;
-    }
-
-    public void ReturnToLobby()
-    {
-        StartCoroutine(ReturnCoroutine());
-    }
-
-    private IEnumerator ReturnCoroutine()
-    {
-        if (NetworkManager.Singleton.IsServer)
-        {
-            LobbyService.Instance.DeleteLobbyAsync(SessionManager.Instance.ActiveSession.Id);
-        }
-        NetworkManager.Singleton.Shutdown();
-        Destroy(NetworkManager.Singleton.gameObject);
-        SessionManager.Instance.LeaveSession();
-
-        yield return null; // let destruction complete
-
-        SceneManager.LoadScene("Lobby");
     }
 
     public void UpdateBattery(int percentage)

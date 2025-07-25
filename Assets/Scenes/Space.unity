@@ -7077,7 +7077,7 @@ MonoBehaviour:
   sourcePoolParent: {fileID: 1769294516}
   sounds:
   - {fileID: 8300000, guid: b3fc8885ec4012c48b18be28eada83fc, type: 3}
-  - {fileID: 8300000, guid: 52bbdc107ba984011b4eb44a2bb1bc91, type: 3}
+  - {fileID: 8300000, guid: d3f4db9406ec6c6408780b31fc6c94b2, type: 3}
   - {fileID: 8300000, guid: 6c83c0e2628d0473a9bcf807fcccda9d, type: 3}
   - {fileID: 8300000, guid: 4da71ab5ba4e643fc940e35847809ead, type: 3}
   minDistance: 10
@@ -9665,7 +9665,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4878064946689564730, guid: 09b9d8b4c3a7ebb4a8f6f78ca24c90c4, type: 3}
       propertyPath: scale
-      value: 1.38
+      value: 0.98
       objectReference: {fileID: 0}
     - target: {fileID: 4878064946689564730, guid: 09b9d8b4c3a7ebb4a8f6f78ca24c90c4, type: 3}
       propertyPath: baseAge
