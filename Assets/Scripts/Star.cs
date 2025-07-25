@@ -191,7 +191,7 @@ public class Star : OrbitingObject
         // supernova
         SupernovaRpc(scale, default);
 
-        float maxDistance = 50f * scale; // max distance for supernova effect
+        float maxDistance = 20f * scale; // max distance for supernova effect
         NovaScreenShakeRpc(maxDistance, default);
 
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, maxDistance, LayerMask.GetMask("Player"));
@@ -200,7 +200,7 @@ public class Star : OrbitingObject
             Rigidbody2D rb = collider.GetComponent<Rigidbody2D>();
             // linear dropoff (instead of inverse distance squared) so it's not as extreme
             float forceDistAdjustment = (1 - (Vector2.Distance(transform.position, collider.transform.position) / maxDistance));
-            rb.AddForce(Manager.Instance.SupernovaForce * scale * forceDistAdjustment * (collider.transform.position - transform.position).normalized, ForceMode2D.Impulse);
+            rb.AddForce(Manager.Instance.SupernovaForce * forceDistAdjustment * (collider.transform.position - transform.position).normalized, ForceMode2D.Impulse);
         }
         
         if (fate.Value == StarFate.NeutronStar)
@@ -209,7 +209,7 @@ public class Star : OrbitingObject
             NeutronStar neutronStarComp = neutronStar.GetComponent<NeutronStar>();
             neutronStarComp.InitializeCelestialObject(scale);
             neutronStarComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-            neutronStarComp.InitializeNeutronStar(newBaseAge, newAge, scale * Random.Range(250f, 350f), scale * Random.Range(0.8f, 1.2f));
+            neutronStarComp.InitializeNeutronStar(newBaseAge, newAge, scale * Random.Range(250f, 350f));
             neutronStar.GetComponent<NetworkObject>().Spawn();
         }
         else
@@ -218,7 +218,7 @@ public class Star : OrbitingObject
             BlackHole blackHoleComp = blackHole.GetComponent<BlackHole>();
             blackHoleComp.InitializeCelestialObject(scale);
             blackHoleComp.InitializeOrbit(orbitCenter, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-            blackHoleComp.InitializeBlackHole(newBaseAge, newAge, scale * Random.Range(250f, 350f), scale * Random.Range(0.8f, 1.2f));
+            blackHoleComp.InitializeBlackHole(newBaseAge, newAge, scale * Random.Range(250f, 350f));
             blackHole.GetComponent<NetworkObject>().Spawn();
         }
         Destroy(gameObject);
@@ -228,9 +228,9 @@ public class Star : OrbitingObject
     void SupernovaRpc(float scale, RpcParams rpcParams)
     {
         GameObject nova = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaEffect, transform.position, Quaternion.Euler(0, 0, Random.Range(0f, 360f)));
-        nova.transform.localScale = Vector2.one * 5 * scale;
+        nova.transform.localScale = Vector2.one * 2 * scale;
         GameObject shockwave = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaShockwave, transform.position, Quaternion.identity);
-        shockwave.transform.localScale = Vector2.one * 10 * scale;
+        shockwave.transform.localScale = Vector2.one * 4 * scale;
 
         AudioManager.Instance.PlaySound(0, 0, transform.position);
     }

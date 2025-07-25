@@ -20,7 +20,7 @@ public class BlackHoleSpawn : OrbitingObjectSpawn
         BlackHole blackHoleComp = blackHole.GetComponent<BlackHole>();
         blackHoleComp.InitializeCelestialObject(scale);
         blackHoleComp.InitializeOrbit(transform.position, semiMajorAxisLength, semiMinorAxisLength, ellipticalRotation, startingAngle, angularVelocity);
-        blackHoleComp.InitializeBlackHole(0, 0, pullForceFactor, pullScale);
+        blackHoleComp.InitializeBlackHole(0, 0, pullForceFactor);
         blackHole.GetComponent<NetworkObject>().Spawn();
     }
 }

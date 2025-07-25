@@ -5,21 +5,19 @@ using static Star;
 
 public class NeutronStar : OrbitingObject
 {
+    [SerializeField] private float pullForceFactorScale = 500;
     private float baseAge;
     private float age = 0;
     private bool destroyed = false;
     [SerializeField] private GameObject outerTrigger;
     private float pullForceFactor;
     private HashSet<PlayerBall> players = new HashSet<PlayerBall>();
-    private float pullScale;
 
-    public void InitializeNeutronStar(float baseAge, float age, float pullForceFactor, float pullScale)
+    public void InitializeNeutronStar(float baseAge, float age, float pullForceFactor)
     {
         this.baseAge = baseAge;
         this.age = age;
-        this.pullScale = pullScale;
-        this.pullForceFactor = pullForceFactor;
-        outerTrigger.transform.localScale = new Vector3(pullScale / transform.localScale.x, pullScale / transform.localScale.y, 1f);
+        this.pullForceFactor = pullForceFactorScale * Mathf.Pow(scale, 2);
 
         Manager.Instance.GameTimeUpdate += UpdateNeutronStarAge;
         OuterRadius outerRadius = outerTrigger.GetComponent<OuterRadius>();
@@ -33,18 +31,6 @@ public class NeutronStar : OrbitingObject
             if (collider.gameObject.layer != LayerMask.NameToLayer("Player")) return;
             players.Remove(collider.GetComponent<PlayerBall>());
         };
-    }
-
-    protected override void StartServerSetup()
-    {
-        base.StartServerSetup();
-        InitializeOuterRadiusClientRpc(pullScale, default);
-    }
-
-    [Rpc(SendTo.ClientsAndHost)]
-    public void InitializeOuterRadiusClientRpc(float pullScale, RpcParams rpcParams)
-    {
-        outerTrigger.transform.localScale = new Vector3(pullScale / transform.localScale.x, pullScale / transform.localScale.y, 1f);
     }
 
     protected override void ServerFixedTick(float fixedDeltaTime)

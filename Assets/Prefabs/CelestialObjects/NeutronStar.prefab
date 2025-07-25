@@ -195,6 +195,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   scale: 0
+  pullForceFactorScale: 1000
   outerTrigger: {fileID: 3520486358370257153}
 --- !u!114 &1073326686391356417
 MonoBehaviour:
@@ -323,7 +324,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 15
+  m_Radius: 25
 --- !u!50 &8092137766882425446
 Rigidbody2D:
   serializedVersion: 5

@@ -78,6 +78,7 @@ public class PlayerBall : NetworkBehaviour
             else
             {
                 infoText.SetText("Player Ball (Opponent)");
+                Destroy(GetComponent<PlayerInput>());
             }
         }
         else
@@ -187,6 +188,7 @@ public class PlayerBall : NetworkBehaviour
     public void FallInBlackHole()
     {
         if (!IsServer) return;
+        rb.linearVelocity = Vector2.zero;
         bool lifeConsumed = Manager.Instance.ConsumeExtraLifeIfPossible(OwnerClientId);
         if (lifeConsumed)
         {
