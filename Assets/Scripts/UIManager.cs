@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private Image[] powerupImages;
     private List<string> powerups = new List<string>();
+    public List<string> Powerups => powerups;
 
     [SerializeField] private GameObject worldInfoTexts;
     [SerializeField] private GameObject uiInfoTexts;
@@ -48,6 +49,11 @@ public class UIManager : MonoBehaviour
 
     private bool timeDistortionButtonPressed = false;
     private string selectedPowerup = "Time Distortion";
+    public int SelectedPowerupIndex {
+        get {
+            return powerups.IndexOf(selectedPowerup);
+        }
+    }
 
     public void HandleForward(bool accelerated)
     {
@@ -163,7 +169,55 @@ public class UIManager : MonoBehaviour
     // On click with index
     public void SelectPowerup(int index)
     {
-        // implement
+        if (index < 0 || index >= powerups.Count)
+            return;
+
+        selectedPowerup = powerups[index];
+        // Send RPC to server to select powerup for this player
+        ClientManager.Instance.SendSelectPowerupRPC(index);
+        // Optionally update UI immediately, or wait for server confirmation
+        UpdateSelectedPowerupUI();
+    }
+    // Called when server confirms selection or deselection
+    public void OnServerSelectedPowerup(int index)
+    {
+        if (index < 0 || index >= powerups.Count)
+        {
+            selectedPowerup = null;
+        }
+        else
+        {
+            selectedPowerup = powerups[index];
+        }
+        UpdateSelectedPowerupUI();
+    }
+
+    public void OnServerDeselectedPowerup()
+    {
+        selectedPowerup = null;
+        UpdateSelectedPowerupUI();
+    }
+
+    private void UpdateSelectedPowerupUI()
+    {
+        // Highlight selected powerup in UI, show info, etc.
+        // Example: update info panels
+        if (selectedPowerup == "Time Distortion")
+        {
+            timeDistortionInfo.SetActive(true);
+            orbitShiftInfo.SetActive(false);
+        }
+        else if (selectedPowerup == "Orbit Shift")
+        {
+            timeDistortionInfo.SetActive(false);
+            orbitShiftInfo.SetActive(true);
+        }
+        else
+        {
+            timeDistortionInfo.SetActive(false);
+            orbitShiftInfo.SetActive(false);
+        }
+        // You can add more UI logic here (e.g., highlight selected slot)
     }
 
     public void InitializeWorldInfoText(GameObject text)
