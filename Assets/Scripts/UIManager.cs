@@ -36,6 +36,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject gameEndUI;
     [SerializeField] private GameObject gameEndRankText;
 
+    [SerializeField] private GameObject goalArrow;
+    [SerializeField] private float arrowOffset;
+    [SerializeField] private GameObject cameraRoot;
+
     private void Awake()
     {
         if (!NetworkManager.Singleton.IsClient)
@@ -44,6 +48,33 @@ public class UIManager : MonoBehaviour
             return;
         }
         instance = this;
+    }
+
+    private void LateUpdate()
+    {
+        UpdateGoalArrow();
+    }
+
+    void UpdateGoalArrow()
+    {
+        Vector2 goalCanvasPos = Camera.main.WorldToScreenPoint(GoalHole.Instance.transform.position);
+        if (0 <= goalCanvasPos.x && goalCanvasPos.x <= Screen.width
+            && 0 <= goalCanvasPos.y && goalCanvasPos.y <= Screen.height)
+        {
+            goalArrow.SetActive(false);
+            return;
+        }
+        Vector2 direction = (GoalHole.Instance.transform.position - cameraRoot.transform.position).normalized;
+        Rect canvasRect = GetComponent<RectTransform>().rect;
+        float halfWidth = (canvasRect.width - (2 * arrowOffset)) / 2;
+        float halfHeight = (canvasRect.height - (2 * arrowOffset)) / 2;
+        float scale = Mathf.Min(halfWidth / Mathf.Abs(direction.x), halfHeight / Mathf.Abs(direction.y));
+
+        Vector2 position = new Vector2(scale * direction.x, scale * direction.y);
+
+        goalArrow.GetComponent<RectTransform>().anchoredPosition = position;
+        goalArrow.GetComponent<RectTransform>().rotation = Quaternion.Euler(0, 0, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
+        goalArrow.SetActive(true);
     }
 
     private bool timeDistortionButtonPressed = false;

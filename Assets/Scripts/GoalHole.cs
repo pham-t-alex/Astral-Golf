@@ -6,6 +6,11 @@ public class GoalHole : MonoBehaviour
     private static GoalHole instance;
     public static GoalHole Instance => instance;
 
+    private void Awake()
+    {
+        instance = this;
+    }
+
     void Start()
     {
         if (!NetworkManager.Singleton.IsServer) Destroy(GetComponent<Collider>());
