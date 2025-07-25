@@ -105,7 +105,7 @@ public class PlayerBall : NetworkBehaviour
         base.OnDestroy();
         if (completedTurn)
         {
-            Manager.Instance.NextPlayerTurn();
+            Manager.Instance.RemovePlayer(OwnerClientId);
         }
     }
 

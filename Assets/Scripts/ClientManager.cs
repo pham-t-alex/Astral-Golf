@@ -72,7 +72,7 @@ public class ClientManager : MonoBehaviour
     private void LateUpdate()
     {
         Transform target = astralProjecting ? soul.transform : player.transform;
-        if (mainCamera != null && player != null)
+        if (mainCamera != null && target != null)
         {
             if (Vector2.Distance(mainCamera.transform.position, target.position) < 0.1f)
             {
@@ -133,6 +133,7 @@ public class ClientManager : MonoBehaviour
 
     public void HandleAstralProject()
     {
+        if (player == null) return;
         astralProjecting = !astralProjecting;
         if (astralProjecting)
         {
@@ -145,5 +146,14 @@ public class ClientManager : MonoBehaviour
             Destroy(soul.gameObject);
             player.GetComponent<PlayerInput>().enabled = true;
         }
+    }
+
+    public void RemovePlayerBody(Vector2 position)
+    {
+        UIManager.Instance.RemovePlayerBody();
+        if (astralProjecting) return;
+        astralProjecting = true;
+        player = null;
+        soul = Instantiate(loadedPrefabs.Soul, position, Quaternion.identity).GetComponent<PlayerSoul>();
     }
 }

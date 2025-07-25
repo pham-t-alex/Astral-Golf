@@ -1,13 +1,19 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
+using Unity.Services.Lobbies;
+using Unity.Services.Lobbies.Models;
+using Unity.Services.Multiplayer;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     private static UIManager instance;
     public static UIManager Instance => instance;
+    [SerializeField] private GameObject rankIndicator;
     [SerializeField] private GameObject turnIndicator;
 
     [SerializeField] private Image[] powerupImages;
@@ -24,6 +30,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject distortionButtons;
     [SerializeField] private GameObject orbitShiftInfo;
     [SerializeField] private GameObject timeDistortionInfo;
+    [SerializeField] private Button astralProjectionButton;
+
+    [SerializeField] private GameObject gameEndScreen;
+    [SerializeField] private GameObject gameEndUI;
+    [SerializeField] private GameObject gameEndRankText;
 
     private void Awake()
     {
@@ -104,14 +115,14 @@ public class UIManager : MonoBehaviour
     public void AstralProject()
     {
         ClientManager.Instance.HandleAstralProject();
-        if (ClientManager.Instance.AstralProjecting)
-        {
-            astralMode.SetActive(true);
-        }
-        else
-        {
-            astralMode.SetActive(false);
-        }
+        astralMode.SetActive(ClientManager.Instance.AstralProjecting);
+    }
+
+    public void RemovePlayerBody()
+    {
+        astralMode.SetActive(true);
+        astralProjectionButton.enabled = false;
+        turnIndicator.SetActive(false);
     }
 
     public void PickupPowerup(string name)
@@ -174,5 +185,52 @@ public class UIManager : MonoBehaviour
         {
             orbitShiftInfo.SetActive(infoTextsActive);
         }
+    }
+
+    public void PlayerVictory(int rank)
+    {
+        rankIndicator.SetActive(true);
+        rankIndicator.GetComponent<TMP_Text>().text = "Rank " + rank;
+    }
+
+    public IEnumerator GameEnd(int rank)
+    {
+        gameEndScreen.SetActive(true);
+        float elapsed = 0f;
+        while (elapsed < 2)
+        {
+            elapsed += Time.deltaTime;
+            gameEndScreen.GetComponent<Image>().color = new Color(0, 0, 0, 0.8f * (Mathf.Min(elapsed, 2) / 2));
+            yield return null;
+        }
+        gameEndRankText.GetComponent<TMP_Text>().text = rank > 0 ? $"Rank: {rank}" : "Unranked";
+        gameEndUI.SetActive(true);
+        if (!NetworkManager.Singleton.IsServer) {
+            NetworkManager.Singleton.OnClientDisconnectCallback += (id) =>
+            {
+                if (id == NetworkManager.ServerClientId) ReturnToLobby();
+            };
+        }
+        yield return null;
+    }
+
+    public void ReturnToLobby()
+    {
+        StartCoroutine(ReturnCoroutine());
+    }
+
+    private IEnumerator ReturnCoroutine()
+    {
+        if (NetworkManager.Singleton.IsServer)
+        {
+            LobbyService.Instance.DeleteLobbyAsync(SessionManager.Instance.ActiveSession.Id);
+        }
+        NetworkManager.Singleton.Shutdown();
+        Destroy(NetworkManager.Singleton.gameObject);
+        SessionManager.Instance.LeaveSession();
+
+        yield return null; // let destruction complete
+
+        SceneManager.LoadScene("Lobby");
     }
 }

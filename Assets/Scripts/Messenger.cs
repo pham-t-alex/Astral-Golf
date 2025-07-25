@@ -73,4 +73,37 @@ public class Messenger : NetworkBehaviour
     {
         AudioManager.Instance.PlaySound(idStart, idEnd, position);
     }
+
+    public void RemovePlayerBody(ulong clientId, Vector2 position)
+    {
+        RemovePlayerBodyRpc(position, RpcTarget.Single(clientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void RemovePlayerBodyRpc(Vector2 position, RpcParams rpcParams)
+    {
+        ClientManager.Instance.RemovePlayerBody(position);
+    }
+
+    public void PlayerVictory(ulong clientId, int rank)
+    {
+        PlayerVictoryRpc(rank, RpcTarget.Single(clientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void PlayerVictoryRpc(int rank, RpcParams rpcParams)
+    {
+        UIManager.Instance.PlayerVictory(rank);
+    }
+
+    public void EndGame(ulong clientId, int rank)
+    {
+        EndGameRpc(rank, RpcTarget.Single(clientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void EndGameRpc(int rank, RpcParams rpcParams)
+    {
+        StartCoroutine(UIManager.Instance.GameEnd(rank));
+    }
 }

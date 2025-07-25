@@ -105,6 +105,7 @@ public class Manager : MonoBehaviour
 
     private List<ulong> playerIds = new List<ulong>();
     private Dictionary<ulong, PlayerBall> playerBalls = new Dictionary<ulong, PlayerBall>();
+    private List<ulong> victoriousPlayers = new List<ulong>();
     private Dictionary<ulong, TimeDistortion> playerTimeDistortions = new Dictionary<ulong, TimeDistortion>();
     private float NetTimeDistortionFactor
     {
@@ -170,6 +171,7 @@ public class Manager : MonoBehaviour
             ServerSidePlayerSetup(player.GetComponent<PlayerBall>(), clientId);
             player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
         }
+        NetworkManager.Singleton.OnClientDisconnectCallback += RemovePlayer;
         ServerSideStartGame();
     }
 
@@ -235,13 +237,12 @@ public class Manager : MonoBehaviour
     public void NextPlayerTurn()
     {
         if (!NetworkManager.Singleton.IsServer) return;
-        int prevPlayer = playerTurn;
-        playerTurn = (playerTurn + 1) % playerIds.Count;
-        while (playerBalls[playerIds[playerTurn]] == null)
+        if (playerIds.Count == 0)
         {
-            if (playerTurn == prevPlayer) return; // change to trigger all players dead logic
-            playerTurn = (playerTurn + 1) % playerIds.Count;
+            EndGame();
+            return;
         }
+        playerTurn = (playerTurn + 1) % playerIds.Count;
         Messenger.Instance.PlayerTurn(playerIds[playerTurn]);
     }
 
@@ -266,5 +267,49 @@ public class Manager : MonoBehaviour
         if (Application.isPlaying) return;
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(playerSpawn.position, playerSpawnRadius);
+    }
+
+    public void RemovePlayer(ulong clientId)
+    {
+        bool currentPlayer = false;
+        if (playerIds[playerTurn] == clientId)
+        {
+            currentPlayer = true;
+        }
+        if (playerIds.Contains(clientId))
+        {
+
+        }
+        playerIds.Remove(clientId);
+        
+        // remove the player body if they were destroyed from destruction (not disconnect)
+        bool playerStillConnected = false;
+        foreach (ulong id in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            if (id == clientId) playerStillConnected = true;
+        }
+        if (playerStillConnected) RemovePlayerBody(clientId, playerBalls[clientId].transform.position);
+
+        if (currentPlayer) NextPlayerTurn();
+    }
+
+    public void PlayerReachedGoal(PlayerBall player)
+    {
+        victoriousPlayers.Add(player.OwnerClientId);
+        Destroy(player.gameObject);
+        Messenger.Instance.PlayerVictory(player.OwnerClientId, victoriousPlayers.IndexOf(player.OwnerClientId) + 1);
+    }
+
+    public void RemovePlayerBody(ulong clientId, Vector2 position)
+    {
+        Messenger.Instance.RemovePlayerBody(clientId, position);
+    }
+
+    public void EndGame()
+    {
+        foreach (ulong id in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            Messenger.Instance.EndGame(id, victoriousPlayers.IndexOf(id) + 1);
+        }
     }
 }

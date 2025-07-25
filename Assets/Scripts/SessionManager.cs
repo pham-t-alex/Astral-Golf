@@ -40,7 +40,6 @@ public class SessionManager : MonoBehaviour
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
             Debug.Log("Signed In: " + AuthenticationService.Instance.PlayerId);
             await FetchLobbies();
-            
         }
         catch (Exception e)
         {
@@ -85,5 +84,11 @@ public class SessionManager : MonoBehaviour
         QuerySessionsResults results = await MultiplayerService.Instance.QuerySessionsAsync(options);
         sessionInfo = results.Sessions;
         LobbiesLoaded?.Invoke();
+    }
+
+    // just sets active session to null, doesn't actually leave
+    public void LeaveSession()
+    {
+        activeSession = null;
     }
 }
