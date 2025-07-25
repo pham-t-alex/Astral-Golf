@@ -6,6 +6,10 @@ using UnityEngine.InputSystem;
 
 public class PlayerBall : NetworkBehaviour
 {
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        AudioManager.Instance.PlaySound(1, 3, transform.position);
+    }
     [Header("Player Stats")]
     [Tooltip("The force multiplier applied to the ball when launched.")]
     [SerializeField] private float launchForce = 100f;
