@@ -227,6 +227,8 @@ public class Star : OrbitingObject
         nova.transform.localScale = Vector2.one * 5 * scale;
         GameObject shockwave = Instantiate(ClientManager.Instance.LoadedPrefabs.SupernovaShockwave, transform.position, Quaternion.identity);
         shockwave.transform.localScale = Vector2.one * 10 * scale;
+
+        AudioManager.Instance.PlaySound(0, 0, transform.position);
     }
 
     // client side

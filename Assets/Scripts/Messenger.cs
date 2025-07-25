@@ -62,4 +62,15 @@ public class Messenger : NetworkBehaviour
         ulong clientId = rpcParams.Receive.SenderClientId;
         Manager.Instance.EndTimeDistortion(clientId);
     }
+
+    public void PlaySound(int idStart, int idEnd, Vector2 position)
+    {
+        PlaySoundRpc(idStart, idEnd, position, default);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void PlaySoundRpc(int idStart, int idEnd, Vector2 position, RpcParams rpcParams)
+    {
+        AudioManager.Instance.PlaySound(idStart, idEnd, position);
+    }
 }
